@@ -6,6 +6,8 @@ Created on Thu Oct 20 10:36:17 2022
 """
 import numpy as np
 import pandas as pd
+import requests
+import io
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import learning_curve
@@ -19,7 +21,13 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns     
 
 #%% Import Data
-df = pd.read_excel (r'C:\Users\celestec\Documents\Projects\BV\Datasets\BV Dataset copy.xlsx')
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MYRHJW647K5PBFRRVMWMWY2YWM3Q" # Make sure the url is the raw version of the file on GitHub
+download = requests.get(url).content
+
+# Reading the downloaded content and turning it into a pandas dataframe
+
+df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+
 
 #%% Separate the Data and Labels
 X = df.iloc[:,:-1]
@@ -182,6 +190,5 @@ ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels
 
 
 
-#%%
+#%% Ethnicity checked accuracy
 
-print("Hello this is a check for GitHub")
