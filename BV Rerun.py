@@ -182,20 +182,6 @@ ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels
 
 
 
+#%%
 
-
-
-
-
-
-#%%Ethnic Specific Accuracy
-
-
-check = pd.DataFrame(np.zeros((1,4)), columns = ["Asian", "White", "Black", "Hispanic"])
-for i in range(y_test.shape[0]):
-    #if y_pred_clflr[i] == y_test[i]:
-        
-       # ethn = es_xtest(i)
-      #  check[ethn] = check[ethn]+1
-        
-        
+print("Hello this is a check for GitHub")
