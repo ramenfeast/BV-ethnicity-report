@@ -26,6 +26,8 @@ download = requests.get(url).content
 
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
+print("Hi there")
+
 #%%Clean data
 df = df.drop([394,395,396], axis = 0)
 
