@@ -21,13 +21,13 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns     
 
 #%% Import Data
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MYRHJW647K5PBFRRVMWMWY2YWM3Q" # Make sure the url is the raw version of the file on GitHub
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ4KP7GV5IIS6TFUI64Y22WZUA"
 download = requests.get(url).content
-
-# Reading the downloaded content and turning it into a pandas dataframe
 
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
+#%%Clean data
+df = df.drop([394,395,396], axis = 0)
 
 #%% Separate the Data and Labels
 X = df.iloc[:,:-1]
