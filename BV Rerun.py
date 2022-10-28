@@ -4,7 +4,7 @@ Created on Thu Oct 20 10:36:17 2022
 
 @author: camer
 """
-import numpy as np
+import numpy as np5
 import pandas as pd
 import requests
 import io
@@ -21,7 +21,7 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns     
 
 #%% Import Data
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ4KP7GV5IIS6TFUI64Y22WZUA"
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ5NSUETSGLNPFQEKGEY22YB7A"
 download = requests.get(url).content
 
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
