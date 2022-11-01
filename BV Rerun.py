@@ -4,7 +4,7 @@ Created on Thu Oct 20 10:36:17 2022
 
 @author: camer
 """
-import numpy as np5
+import numpy as np
 import pandas as pd
 import requests
 import io
@@ -22,15 +22,14 @@ import seaborn as sns
 
 #%% Import Data
 
-#Personal Access Token Expires Jan 26 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
-username = 'ramenfeast'
-token = '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'
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv"
+#Need to update url link every Monday
+
+
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ446364TAWCV4A4F6EY3BRI3Q"
 download = requests.get(url).content
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
-print("Hi there")
-
+print(df)
 
 
 
@@ -44,10 +43,13 @@ y = df.iloc[:,-1]
 #%% Train Test Split
 X_train, X_test, y_train, y_test = train_test_split(X, y,test_size=0.2, random_state=1)
 #%% Extract Ethinic group and commmunity group data
-es_xtest = X_test[['Ethnic Groupa', 'Community groupc ']].copy()
+es_xtest = X_test[['Ethnic Groupa']].copy()
+cs_xtest = X_test[['Community groupc ']].copy()
 X_test=X_test.drop(labels= ['Ethnic Groupa', 'Community groupc '], axis=1)
 
-es_xtrain = X_train[['Ethnic Groupa', 'Community groupc ']].copy()
+
+es_xtrain = X_train[['Ethnic Groupa']].copy()
+cs_xtrain = X_train[['Community groupc ']].copy()
 X_train=X_train.drop(labels= ['Ethnic Groupa', 'Community groupc '], axis=1)
 
 #%%Normalization
@@ -183,7 +185,7 @@ ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels');
 ax.set_title('Random Forest Confusion Matrix'); 
 ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels(['BV Positive', 'BV Negative']);
 
-#%% GNB Confusion Matrix
+#%% MNB Confusion Matrix
 
 cm = confusion_matrix(y_test, y_pred_clfmnb)
 
@@ -200,3 +202,21 @@ ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels
 
 #%% Ethnicity checked accuracy
 
+classifiers = [y_pred_clflr,y_pred_clfrf,y_pred_clfmnb]
+
+for i in classifiers:
+    rng = [j for j in range(0,y_test.size)]
+    x = 0
+    m=0
+    tracker = np.zeros(4)
+    for k in rng:
+        guess = i[x]
+        check = y_test.iloc[x]
+        if guess == check:
+            if es_xtest.iloc[x] == 'White':
+                tracker[1]=tracker[1]+1
+                print(tracker)
+
+        x = x+1
+                
+        
