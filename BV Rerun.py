@@ -21,12 +21,18 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns     
 
 #%% Import Data
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ5NSUETSGLNPFQEKGEY22YB7A"
-download = requests.get(url).content
 
+#Personal Access Token Expires Jan 26 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
+username = 'ramenfeast'
+token = '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'
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv"
+download = requests.get(url).content
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
 print("Hi there")
+
+
+
 
 #%%Clean data
 df = df.drop([394,395,396], axis = 0)
