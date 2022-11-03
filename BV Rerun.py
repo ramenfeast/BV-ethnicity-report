@@ -25,7 +25,7 @@ import seaborn as sns
 #Need to update url link every Monday
 
 
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ446364TAWCV4A4F6EY3BRI3Q"
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ5PLH5CMQWRSCWW5DGY3D5P7Q"
 download = requests.get(url).content
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
@@ -200,23 +200,73 @@ ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels
 
 
 
-#%% Ethnicity checked accuracy
+#%% Ethnicity checked accuracy function
 
-classifiers = [y_pred_clflr,y_pred_clfrf,y_pred_clfmnb]
-
-for i in classifiers:
+def ethnic_based_acc(classifier):
     rng = [j for j in range(0,y_test.size)]
     x = 0
-    m=0
     tracker = np.zeros(4)
     for k in rng:
-        guess = i[x]
+        guess = classifier[x]
         check = y_test.iloc[x]
         if guess == check:
-            if es_xtest.iloc[x] == 'White':
-                tracker[1]=tracker[1]+1
-                print(tracker)
-
-        x = x+1
+            if es_xtest.iloc[x,0] == 'White':
+                tracker[0]=tracker[0]+1
                 
+            elif es_xtest.iloc[x,0] == 'Asian':
+                tracker[1]=tracker[1]+1
+                
+            elif es_xtest.iloc[x,0] == 'Black':
+                tracker[2]=tracker[2]+1
+                
+            elif es_xtest.iloc[x,0] == 'Hispanic':
+                tracker[3]=tracker[3]+1
+                
+        x = x+1
+    ethnic_accuracy = pd.DataFrame(index = ['Accuracy'])
+    total_ethnic = es_xtest.value_counts()
+    ethnic_accuracy['White'] = tracker[0]/total_ethnic['White']
+    ethnic_accuracy['Asian'] = tracker[1]/total_ethnic['Asian']
+    ethnic_accuracy['Black'] = tracker[2]/total_ethnic['Black']
+    ethnic_accuracy['Hispanic'] = tracker[3]/total_ethnic['Hispanic']
+    print(ethnic_accuracy)
         
+#%% Community Group checked accuracy function
+
+def comm_group_acc(classifier):
+    rng = [j for j in range(0,y_test.size)]
+    x = 0
+    tracker = np.zeros(4)
+    for k in rng:
+        guess = classifier[x]
+        check = y_test.iloc[x]
+        if guess == check:
+            if cs_xtest.iloc[x,0] == 'I':
+                tracker[0]=tracker[0]+1
+                
+            elif cs_xtest.iloc[x,0] == 'II':
+                tracker[1]=tracker[1]+1
+                
+            elif cs_xtest.iloc[x,0] == 'III':
+                tracker[2]=tracker[2]+1
+                
+            elif cs_xtest.iloc[x,0] == 'IV':
+                tracker[3]=tracker[3]+1
+                
+        x = x+1
+    community_accuracy = pd.DataFrame(index = ['Accuracy'])
+    total_comm = cs_xtest.value_counts()
+    community_accuracy['I'] = tracker[0]/total_comm['I']
+    community_accuracy['II'] = tracker[1]/total_comm['II']
+    community_accuracy['III'] = tracker[2]/total_comm['III']
+    community_accuracy['IV'] = tracker[3]/total_comm['IV']
+    print(community_accuracy)
+#%%ethnic based accuracy
+ethnic_based_acc(y_pred_clflr)
+ethnic_based_acc(y_pred_clfrf)
+ethnic_based_acc(y_pred_clfmnb)
+
+#%%Community group accuracy
+comm_group_acc(y_pred_clflr)
+comm_group_acc(y_pred_clfrf)
+comm_group_acc(y_pred_clfmnb)
