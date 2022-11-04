@@ -20,12 +20,13 @@ from sklearn.metrics import auc
 from sklearn.metrics import confusion_matrix
 import seaborn as sns     
 
+
 #%% Import Data
 
 #Need to update url link every Monday
 
 
-url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv?token=GHSAT0AAAAAAB2MPZZ5PLH5CMQWRSCWW5DGY3D5P7Q"
+url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%20Dataset%20copy.csv"
 download = requests.get(url).content
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
