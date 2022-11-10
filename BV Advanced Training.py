@@ -4,7 +4,7 @@ Created on Wed Nov  9 12:08:14 2022
 
 @author: celestec
 """
-#%%Imports and Functions
+# %%Imports and Functions
 #%%%Imports
 import numpy as np
 import pandas as pd
@@ -20,6 +20,8 @@ from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+#%%% Random State
+rando=1
 # %%%learning Curve Function
 
 
@@ -205,7 +207,7 @@ y = df.iloc[:, -1]
 
 # %%% Test Train Split
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=1)
+    X, y, test_size=0.2, random_state=rando)
 # %%% Extract Ethinic group and commmunity group data
 es_xtest = X_test[['Ethnic Groupa']].copy()
 cs_xtest = X_test[['Community groupc ']].copy()
@@ -233,113 +235,6 @@ y_train[y_train >= 7] = 1
 y_test[y_test < 7] = 0
 y_test[y_test >= 7] = 1
 
-# %% Train Test Split and Normalization (Ethnic Isolated)
-#%%% Initial X y split
-X_total = df.iloc[:, :-1]
-y_total = df.iloc[:, -1]
-
-# %%% Initial Test Train Split
-Xt_train, Xt_test, yt_train, yt_test = train_test_split(
-    X_total, y_total, test_size=0.2, random_state=1)
-# %%% Sort and Split Ethnicities
-X_w = Xt_train.loc[Xt_train.loc['Ethnic Groupa'] == 'White']
-X_b = Xt_train.loc[Xt_train.loc['Ethnic Groupa'] == 'Black']
-X_a = Xt_train.loc[Xt_train.loc['Ethnic Groupa'] == 'Asian']
-X_h = Xt_train.loc[Xt_train.loc['Ethnic Groupa'] == 'Hispanic']
-
-#y_w = yt_train.loc[Xt_train.loc['Ethnic Groupa'] == 'White']
-
-#%%% Split x and y
-X_w = white_samples.iloc[:, :-1]
-y_w = white_samples.iloc[:, -1]
-
-X_b = black_samples.iloc[:, :-1]
-y_b = black_samples.iloc[:, -1]
-
-X_a = asian_samples.iloc[:, :-1]
-y_a = asian_samples.iloc[:, -1]
-
-X_h = hispanic_samples.iloc[:, :-1]
-y_h = hispanic_samples.iloc[:, -1]
-
-# %%% Test Train Split
-Xw_train, Xw_test, yw_train, yw_test = train_test_split(
-    X_w, y_w, test_size=0.2, random_state=1)
-
-Xb_train, Xb_test, yb_train, yb_test = train_test_split(
-    X_b, y_b, test_size=0.2, random_state=1)
-
-Xa_train, Xa_test, ya_train, ya_test = train_test_split(
-    X_a, y_a, test_size=0.2, random_state=1)
-
-Xh_train, Xh_test, yh_train, yh_test = train_test_split(
-    X_h, y_h, test_size=0.2, random_state=1)
-# %%% Drop Ethinic group and commmunity group data
-
-Xw_test = Xw_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-Xw_train = Xw_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-Xb_test = Xb_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-Xb_train = Xb_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-Xa_test = Xa_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-Xa_train = Xa_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-Xh_test = Xh_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-Xh_train = Xh_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-# %%% Normalization
-
-# Normalize pH
-Xw_train['pH'] = Xw_train['pH']/14
-Xw_test['pH'] = Xw_test['pH']/14
-
-Xb_train['pH'] = Xb_train['pH']/14
-Xb_test['pH'] = Xb_test['pH']/14
-
-Xa_train['pH'] = Xa_train['pH']/14
-Xa_test['pH'] = Xa_test['pH']/14
-
-Xh_train['pH'] = Xh_train['pH']/14
-Xh_test['pH'] = Xh_test['pH']/14
-
-# Normalize 16s RNA data
-Xw_train.iloc[:, 1::] = Xw_train.iloc[:, 1::]/100
-Xw_test.iloc[:, 1::] = Xw_test.iloc[:, 1::]/100
-
-Xb_train.iloc[:, 1::] = Xb_train.iloc[:, 1::]/100
-Xb_test.iloc[:, 1::] = Xb_test.iloc[:, 1::]/100
-
-Xa_train.iloc[:, 1::] = Xa_train.iloc[:, 1::]/100
-Xa_test.iloc[:, 1::] = Xa_test.iloc[:, 1::]/100
-
-Xh_train.iloc[:, 1::] = Xh_train.iloc[:, 1::]/100
-Xh_test.iloc[:, 1::] = Xh_test.iloc[:, 1::]/100
-
-# %%% Binary y
-yw_train[yw_train < 7] = 0
-yw_train[yw_train >= 7] = 1
-
-yw_test[yw_test < 7] = 0
-yw_test[yw_test >= 7] = 1
-
-yb_train[yb_train < 7] = 0
-yb_train[yb_train >= 7] = 1
-
-yb_test[yb_test < 7] = 0
-yb_test[yb_test >= 7] = 1
-
-ya_train[ya_train < 7] = 0
-ya_train[ya_train >= 7] = 1
-
-ya_test[ya_test < 7] = 0
-ya_test[ya_test >= 7] = 1
-
-yh_train[yh_train < 7] = 0
-yh_train[yh_train >= 7] = 1
-
-yh_test[yh_test < 7] = 0
-yh_test[yh_test >= 7] = 1
 # %% Logistic Regression (Simple Training)
 # %%% Model Training
 clflr = LogisticRegression().fit(X_train, y_train)
@@ -420,7 +315,126 @@ print(miss_ethnic_clfmnb)
 
 miss_comm_clfmnb = missclass_comm(y_pred_clfmnb)
 print(miss_comm_clfmnb)
-#%% Logistic Regression (Ethnic Isolated)
+# %% Train Test Split and Normalization (Ethnic Isolated)
+#%%% Initial X y split
+X_total = df.iloc[:, :-1]
+y_total = df.iloc[:, -1]
+
+# %%% Initial Test Train Split
+Xt_train, Xt_test, yt_train, yt_test = train_test_split(
+    X_total, y_total, test_size=0.2, random_state=1)
+# %%% Sort and Split Ethnicities
+X_w = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'White']
+X_b = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'Black']
+X_a = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'Asian']
+X_h = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'Hispanic']
+
+y_w = yt_train.loc[Xt_train['Ethnic Groupa'] == 'White']
+y_b = yt_train.loc[Xt_train['Ethnic Groupa'] == 'Black']
+y_a = yt_train.loc[Xt_train['Ethnic Groupa'] == 'Asian']
+y_h = yt_train.loc[Xt_train['Ethnic Groupa'] == 'Hispanic']
+
+
+# %%% Test Train Split
+Xw_train, Xw_test, yw_train, yw_test = train_test_split(
+    X_w, y_w, test_size=0.2, random_state=rando)
+
+Xb_train, Xb_test, yb_train, yb_test = train_test_split(
+    X_b, y_b, test_size=0.2, random_state=rando)
+
+Xa_train, Xa_test, ya_train, ya_test = train_test_split(
+    X_a, y_a, test_size=0.2, random_state=rando)
+
+Xh_train, Xh_test, yh_train, yh_test = train_test_split(
+    X_h, y_h, test_size=0.2, random_state=rando)
+
+#%%% Save Demographic Info on overall data
+es_xttest = Xt_test[['Ethnic Groupa']].copy()
+cs_xttest = Xt_test[['Community groupc ']].copy()
+
+es_xttrain = Xt_train[['Ethnic Groupa']].copy()
+cs_xttrain = Xt_train[['Community groupc ']].copy()
+
+# %%% Drop Ethinic group and commmunity group data
+
+Xt_test = Xt_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+Xt_train = Xt_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+
+Xw_test = Xw_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+Xw_train = Xw_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+
+Xb_test = Xb_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+Xb_train = Xb_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+
+Xa_test = Xa_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+Xa_train = Xa_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+
+Xh_test = Xh_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+Xh_train = Xh_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
+
+# %%% Normalization
+
+# Normalize pH
+Xt_train['pH'] = Xt_train['pH']/14
+Xt_test['pH'] = Xt_test['pH']/14
+
+Xw_train['pH'] = Xw_train['pH']/14
+Xw_test['pH'] = Xw_test['pH']/14
+
+Xb_train['pH'] = Xb_train['pH']/14
+Xb_test['pH'] = Xb_test['pH']/14
+
+Xa_train['pH'] = Xa_train['pH']/14
+Xa_test['pH'] = Xa_test['pH']/14
+
+Xh_train['pH'] = Xh_train['pH']/14
+Xh_test['pH'] = Xh_test['pH']/14
+
+# Normalize 16s RNA data
+Xt_train.iloc[:, 1::] = Xt_train.iloc[:, 1::]/100
+Xt_test.iloc[:, 1::] = Xt_test.iloc[:, 1::]/100
+
+Xw_train.iloc[:, 1::] = Xw_train.iloc[:, 1::]/100
+Xw_test.iloc[:, 1::] = Xw_test.iloc[:, 1::]/100
+
+Xb_train.iloc[:, 1::] = Xb_train.iloc[:, 1::]/100
+Xb_test.iloc[:, 1::] = Xb_test.iloc[:, 1::]/100
+
+Xa_train.iloc[:, 1::] = Xa_train.iloc[:, 1::]/100
+Xa_test.iloc[:, 1::] = Xa_test.iloc[:, 1::]/100
+
+Xh_train.iloc[:, 1::] = Xh_train.iloc[:, 1::]/100
+Xh_test.iloc[:, 1::] = Xh_test.iloc[:, 1::]/100
+
+# %%% Binary y
+yt_train[yt_train < 7] = 0
+yt_train[yt_train >= 7] = 1
+
+yw_train[yw_train < 7] = 0
+yw_train[yw_train >= 7] = 1
+
+yw_test[yw_test < 7] = 0
+yw_test[yw_test >= 7] = 1
+
+yb_train[yb_train < 7] = 0
+yb_train[yb_train >= 7] = 1
+
+yb_test[yb_test < 7] = 0
+yb_test[yb_test >= 7] = 1
+
+ya_train[ya_train < 7] = 0
+ya_train[ya_train >= 7] = 1
+
+ya_test[ya_test < 7] = 0
+ya_test[ya_test >= 7] = 1
+
+yh_train[yh_train < 7] = 0
+yh_train[yh_train >= 7] = 1
+
+yh_test[yh_test < 7] = 0
+yh_test[yh_test >= 7] = 1
+
+# %% Logistic Regression (Ethnic Isolated)
 #%%% Just White
 # %%%% Model Training
 clflrw = LogisticRegression().fit(Xw_train, yw_train)
