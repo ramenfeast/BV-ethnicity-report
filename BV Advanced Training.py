@@ -25,10 +25,10 @@ rando=1
 # %%%learning Curve Function
 
 
-def plot_learning_curve(clf, title):
+def plot_learning_curve(clf, Xtrain, ytrain, title):
     train_sizes, train_scores, validation_scores = learning_curve(estimator=clf,
-                               X=X_train,
-                               y=y_train,
+                               X=Xtrain,
+                               y=ytrain,
                                cv=5,
                                scoring='neg_mean_squared_error')
 
@@ -50,9 +50,9 @@ def plot_learning_curve(clf, title):
     
 # %%% Confusion Matrix Function
 
-def plot_confusion_matrix(test, pred, color, title):
+def plot_confusion_matrix(test, pred, color, title, fignum):
     cm=confusion_matrix(test,pred)
-
+    plt.figure(fignum)
     ax=plt.subplot()
 # annot=True to annotate cells, ftm='g' to disable scientific notation
     sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap=sns.color_palette(color));
@@ -65,29 +65,29 @@ def plot_confusion_matrix(test, pred, color, title):
 
 # %%% Ethnicity checked accuracy function
 
-def ethnic_based_acc(pred):
-    rng=[j for j in range(0, y_test.size)]
+def ethnic_based_acc(pred, test, save):
+    rng=[j for j in range(0, test.size)]
     x=0
     tracker=np.zeros(4)
     for k in rng:
         guess=pred[x]
-        check=y_test.iloc[x]
+        check=test.iloc[x]
         if guess == check:
-            if es_xtest.iloc[x, 0] == 'White':
+            if save.iloc[x, 0] == 'White':
                 tracker[0]=tracker[0]+1
 
-            elif es_xtest.iloc[x, 0] == 'Asian':
+            elif save.iloc[x, 0] == 'Asian':
                 tracker[1]=tracker[1]+1
 
-            elif es_xtest.iloc[x, 0] == 'Black':
+            elif save.iloc[x, 0] == 'Black':
                 tracker[2]=tracker[2]+1
 
-            elif es_xtest.iloc[x, 0] == 'Hispanic':
+            elif save.iloc[x, 0] == 'Hispanic':
                 tracker[3]=tracker[3]+1
 
         x=x+1
     ethnic_accuracy=pd.DataFrame(index=['Accuracy'])
-    total_ethnic=es_xtest.value_counts()
+    total_ethnic=es_xttest.value_counts()
     ethnic_accuracy['White']=tracker[0]/total_ethnic['White']
     ethnic_accuracy['Asian']=tracker[1]/total_ethnic['Asian']
     ethnic_accuracy['Black']=tracker[2]/total_ethnic['Black']
@@ -96,29 +96,29 @@ def ethnic_based_acc(pred):
 
 # %%% Community Group checked accuracy function
 
-def comm_group_acc(pred):
-    rng=[j for j in range(0, y_test.size)]
+def comm_group_acc(pred, test, save):
+    rng=[j for j in range(0, test.size)]
     x=0
     tracker=np.zeros(4)
     for k in rng:
         guess=pred[x]
-        check=y_test.iloc[x]
+        check=test.iloc[x]
         if guess == check:
-            if cs_xtest.iloc[x, 0] == 'I':
+            if save.iloc[x, 0] == 'I':
                 tracker[0]=tracker[0]+1
 
-            elif cs_xtest.iloc[x, 0] == 'II':
+            elif save.iloc[x, 0] == 'II':
                 tracker[1]=tracker[1]+1
 
-            elif cs_xtest.iloc[x, 0] == 'III':
+            elif save.iloc[x, 0] == 'III':
                 tracker[2]=tracker[2]+1
 
-            elif cs_xtest.iloc[x, 0] == 'IV':
+            elif save.iloc[x, 0] == 'IV':
                 tracker[3]=tracker[3]+1
 
         x=x+1
     community_accuracy=pd.DataFrame(index=['Accuracy'])
-    total_comm=cs_xtest.value_counts()
+    total_comm=cs_xttest.value_counts()
     community_accuracy['I']=tracker[0]/total_comm['I']
     community_accuracy['II']=tracker[1]/total_comm['II']
     community_accuracy['III']=tracker[2]/total_comm['III']
@@ -127,26 +127,26 @@ def comm_group_acc(pred):
 
 #%%% Ethnic Breakdown of Missclassified Results
 
-def missclass_ethnic(pred):
-    rng=[j for j in range(0, y_test.size)]
+def missclass_ethnic(pred, test, save):
+    rng=[j for j in range(0, test.size)]
     x=0
     y=0
     tracker=np.zeros(4)
     for k in rng:
         guess=pred[x]
-        check=y_test.iloc[x]
+        check=test.iloc[x]
         if guess != check:
             y=y+1
-            if es_xtest.iloc[x, 0] == 'White':
+            if save.iloc[x, 0] == 'White':
                 tracker[0]=tracker[0]+1
 
-            elif es_xtest.iloc[x, 0] == 'Asian':
+            elif save.iloc[x, 0] == 'Asian':
                 tracker[1]=tracker[1]+1
 
-            elif es_xtest.iloc[x, 0] == 'Black':
+            elif save.iloc[x, 0] == 'Black':
                 tracker[2]=tracker[2]+1
 
-            elif es_xtest.iloc[x, 0] == 'Hispanic':
+            elif save.iloc[x, 0] == 'Hispanic':
                 tracker[3]=tracker[3]+1
         x=x+1
     missclass_breakdown=pd.DataFrame(index=['Percentage'])
@@ -158,26 +158,26 @@ def missclass_ethnic(pred):
 
 #%%% Community Group Breakdown of Missclassified Results
 
-def missclass_comm(pred):
-    rng=[j for j in range(0, y_test.size)]
+def missclass_comm(pred, test, save):
+    rng=[j for j in range(0, test.size)]
     x=0
     y=0
     tracker=np.zeros(4)
     for k in rng:
         guess=pred[x]
-        check=y_test.iloc[x]
+        check=test.iloc[x]
         if guess != check:
             y=y+1
-            if cs_xtest.iloc[x, 0] == 'I':
+            if save.iloc[x, 0] == 'I':
                 tracker[0]=tracker[0]+1
 
-            elif cs_xtest.iloc[x, 0] == 'II':
+            elif save.iloc[x, 0] == 'II':
                 tracker[1]=tracker[1]+1
 
-            elif cs_xtest.iloc[x, 0] == 'III':
+            elif save.iloc[x, 0] == 'III':
                 tracker[2]=tracker[2]+1
 
-            elif cs_xtest.iloc[x, 0] == 'IV':
+            elif save.iloc[x, 0] == 'IV':
                 tracker[3]=tracker[3]+1
         x=x+1
     missclass_breakdown=pd.DataFrame(index=['Percentage'])
@@ -186,6 +186,45 @@ def missclass_comm(pred):
     missclass_breakdown['III']=100*tracker[2]/y
     missclass_breakdown['IV']=100*tracker[3]/y
     return missclass_breakdown
+
+# %%% Ethnic Trained Metrics
+def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, predt, color,  ):
+    plt.figure(0)
+    plot_learning_curve(classifier, xtrain, ytrain, "Classifier Learning Curve")
+
+    plt.figure(1)
+    RocCurveDisplay.from_estimator(classifier, Xw_test, yw_test)
+    plt.figure(2)
+    RocCurveDisplay.from_estimator(classifier, Xb_test, yb_test)
+    plt.figure(3)
+    RocCurveDisplay.from_estimator(classifier, Xa_test, ya_test)
+    plt.figure(4)
+    RocCurveDisplay.from_estimator(classifier, Xh_test, yh_test)
+    plt.figure(5)
+    RocCurveDisplay.from_estimator(classifier, Xt_test, yt_test)
+
+    plt.figure(6)
+    plot_confusion_matrix(yw_test, predw, color, "Confusion Matrix",7)
+    plot_confusion_matrix(yb_test, predb, color, "Confusion Matrix",8)
+    plot_confusion_matrix(ya_test, preda, color, "Confusion Matrix",9)
+    plot_confusion_matrix(yh_test, predh, color, "Confusion Matrix",10)
+    plot_confusion_matrix(yt_test, predt, color, "Confusion Matrix",11)
+
+    #Ethnic and Community group Accuracy
+    ethnic_acc = ethnic_based_acc(predt, yt_test, es_xttest)
+    print(ethnic_acc)
+    comm_acc = comm_group_acc(predt, yt_test, cs_xttest)
+    print(comm_acc)
+
+    #Ethnic and Community Group Breakdown of Missclassified
+    miss_ethnic = missclass_ethnic(predt, yt_test, es_xttest)
+    print(miss_ethnic)
+
+    miss_comm = missclass_comm(predt, yt_test, cs_xttest)
+    print(miss_comm)
+    
+    return(ethnic_acc, comm_acc, miss_ethnic, miss_comm)
+
 # %% Import and Clean Data
 # %%% Import Data
 
@@ -200,121 +239,6 @@ print(df)
 # %%%Clean data
 df = df.drop([394, 395, 396], axis=0)
 
-# %% Train Test Split and Normalization (Standard)
-# %%% Separate the Data and Labels
-X = df.iloc[:, :-1]
-y = df.iloc[:, -1]
-
-# %%% Test Train Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=rando)
-# %%% Extract Ethinic group and commmunity group data
-es_xtest = X_test[['Ethnic Groupa']].copy()
-cs_xtest = X_test[['Community groupc ']].copy()
-X_test = X_test.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-
-es_xtrain = X_train[['Ethnic Groupa']].copy()
-cs_xtrain = X_train[['Community groupc ']].copy()
-X_train = X_train.drop(labels=['Ethnic Groupa', 'Community groupc '], axis=1)
-
-# %%% Normalization
-
-# Normalize pH
-X_train['pH'] = X_train['pH']/14
-X_test['pH'] = X_test['pH']/14
-
-# Normalize 16s RNA data
-X_train.iloc[:, 1::] = X_train.iloc[:, 1::]/100
-X_test.iloc[:, 1::] = X_test.iloc[:, 1::]/100
-
-# %%% Binary y
-y_train[y_train < 7] = 0
-y_train[y_train >= 7] = 1
-
-y_test[y_test < 7] = 0
-y_test[y_test >= 7] = 1
-
-# %% Logistic Regression (Simple Training)
-# %%% Model Training
-clflr = LogisticRegression().fit(X_train, y_train)
-y_pred_clflr = clflr.predict(X_test)
-
-# %%%Logistic Regression Learning Curve
-plot_learning_curve(clflr, "Learning Curve for Logistic Regression Classifier")
-
-# %%% LR ROC
-RocCurveDisplay.from_estimator(clflr, X_test, y_test)
-
-#%%%LR Confusion Matrix
-plot_confusion_matrix(y_test, y_pred_clflr, "Blues", "Logistic Regression Confusion Matrix")
-
-#%%% LR Ethnic and Community group Accuracy
-ethnic_acc_clflr = ethnic_based_acc(y_pred_clflr)
-print(ethnic_acc_clflr)
-comm_acc_clflr = comm_group_acc(y_pred_clflr)
-print(comm_acc_clflr)
-
-#%%% LR Ethnic and Community Group Breakdown of Missclassified
-miss_ethnic_clflr = missclass_ethnic(y_pred_clflr)
-print(miss_ethnic_clflr)
-
-miss_comm_clflr = missclass_comm(y_pred_clflr)
-print(miss_comm_clflr)
-
-# %%Random Forest (Simple Training)
-#%%% Model Training
-clfrf = RandomForestClassifier().fit(X_train, y_train)
-y_pred_clfrf = clfrf.predict(X_test)
-
-# %%% RF learning curve
-plot_learning_curve(clfrf, "Learning Curve for Random Forest Classifier")
-
-# %%% RF ROC
-RocCurveDisplay.from_estimator(clfrf, X_test, y_test)
-
-# %%% RF Confusion Matrix
-plot_confusion_matrix(y_test, y_pred_clfrf, "Greens", "Random Forest Confusion Matrix")
-
-#%%% RF Ethnic and Community group Accuracy
-ethnic_acc_clfrf = ethnic_based_acc(y_pred_clfrf)
-print(ethnic_acc_clfrf)
-comm_acc_clfrf = comm_group_acc(y_pred_clfrf)
-print(comm_acc_clfrf)
-
-#%%% RF Ethnic and Community Group Breakdown of Missclassified
-miss_ethnic_clfrf = missclass_ethnic(y_pred_clfrf)
-print(miss_ethnic_clfrf)
-
-miss_comm_clfrf = missclass_comm(y_pred_clfrf)
-print(miss_comm_clfrf)
-
-# %% Multinomial Naive Bayes (Simple Training)
-#%%% Model Training
-clfmnb = MultinomialNB().fit(X_train, y_train)
-y_pred_clfmnb = clfmnb.predict(X_test)
-
-# %%% MNB Learning Curve
-plot_learning_curve(clfmnb, "Learning Curve for Multinomial Naive Bayes Classifier")
-
-# %%% MNB ROC
-RocCurveDisplay.from_estimator(clfmnb, X_test, y_test)
-
-# %%% MNB Confusion Matrix
-plot_confusion_matrix(y_test, y_pred_clfmnb, "Reds", "Multinomial Naive Bayes Confusion Matrix")
-
-#%%% LR Ethnic and Community group Accuracy
-ethnic_acc_clfmnb = ethnic_based_acc(y_pred_clfmnb)
-print(ethnic_acc_clfmnb)
-comm_acc_clfmnb = comm_group_acc(y_pred_clfmnb)
-print(comm_acc_clfmnb)
-
-#%%% LR Ethnic and Community Group Breakdown of Missclassified
-miss_ethnic_clfmnb = missclass_ethnic(y_pred_clfmnb)
-print(miss_ethnic_clfmnb)
-
-miss_comm_clfmnb = missclass_comm(y_pred_clfmnb)
-print(miss_comm_clfmnb)
 # %% Train Test Split and Normalization (Ethnic Isolated)
 #%%% Initial X y split
 X_total = df.iloc[:, :-1]
@@ -410,6 +334,9 @@ Xh_test.iloc[:, 1::] = Xh_test.iloc[:, 1::]/100
 yt_train[yt_train < 7] = 0
 yt_train[yt_train >= 7] = 1
 
+yt_test[yt_test < 7] = 0
+yt_test[yt_test >= 7] = 1
+
 yw_train[yw_train < 7] = 0
 yw_train[yw_train >= 7] = 1
 
@@ -443,25 +370,81 @@ y_pred_clflrw_w = clflrw.predict(Xw_test)
 y_pred_clflrw_b = clflrw.predict(Xb_test)
 y_pred_clflrw_a = clflrw.predict(Xa_test)
 y_pred_clflrw_h = clflrw.predict(Xh_test)
+y_pred_clflrw_t = clflrw.predict(Xt_test)
 
-# %%%%Logistic Regression Learning Curve
-plot_learning_curve(clflr, "Learning Curve for Logistic Regression Classifier")
 
-# %%% LR ROC
-RocCurveDisplay.from_estimator(clflr, X_test, y_test)
+#%%%% Model Metrics
+clflrw_ethnic_acc, clflrw_comm_acc, clflrw_miss_ethnic, clflrw_miss_comm = ethnic_spec_metrics(
+                    clflrw, Xw_train, yw_train, 
+                    y_pred_clflrw_w,
+                    y_pred_clflrw_b,
+                    y_pred_clflrw_a,
+                    y_pred_clflrw_h,
+                    y_pred_clflrw_t,
+                    "Blues"
+                    )
+#%%% Just Black
+# %%%% Model Training
+clflrb = LogisticRegression().fit(Xb_train, yb_train)
+#Note: notation is y_pred_clflrw_b means white trained, black tested
+y_pred_clflrb_w = clflrb.predict(Xw_test)
+y_pred_clflrb_b = clflrb.predict(Xb_test)
+y_pred_clflrb_a = clflrb.predict(Xa_test)
+y_pred_clflrb_h = clflrb.predict(Xh_test)
+y_pred_clflrb_t = clflrb.predict(Xt_test)
 
-#%%%LR Confusion Matrix
-plot_confusion_matrix(y_test, y_pred_clflr, "Blues", "Logistic Regression Confusion Matrix")
 
-#%%% LR Ethnic and Community group Accuracy
-ethnic_acc_clflr = ethnic_based_acc(y_pred_clflr)
-print(ethnic_acc_clflr)
-comm_acc_clflr = comm_group_acc(y_pred_clflr)
-print(comm_acc_clflr)
+#%%%% Model Metrics
+clflrb_ethnic_acc, clflrb_comm_acc, clflrb_miss_ethnic, clflrb_miss_comm = ethnic_spec_metrics(
+                    clflrb, Xb_train, yb_train, 
+                    y_pred_clflrb_w,
+                    y_pred_clflrb_b,
+                    y_pred_clflrb_a,
+                    y_pred_clflrb_h,
+                    y_pred_clflrb_t,
+                    "Reds"
+                    )
 
-#%%% LR Ethnic and Community Group Breakdown of Missclassified
-miss_ethnic_clflr = missclass_ethnic(y_pred_clflr)
-print(miss_ethnic_clflr)
+#%%% Just Asian
+# %%%% Model Training
+clflra = LogisticRegression().fit(Xa_train, ya_train)
+#Note: notation is y_pred_clflrw_b means white trained, black tested
+y_pred_clflra_w = clflra.predict(Xw_test)
+y_pred_clflra_b = clflra.predict(Xb_test)
+y_pred_clflra_a = clflra.predict(Xa_test)
+y_pred_clflra_h = clflra.predict(Xh_test)
+y_pred_clflra_t = clflra.predict(Xt_test)
 
-miss_comm_clflr = missclass_comm(y_pred_clflr)
-print(miss_comm_clflr)
+
+#%%%% Model Metrics
+clflra_ethnic_acc, clflra_comm_acc, clflra_miss_ethnic, clflra_miss_comm = ethnic_spec_metrics(
+                    clflra, Xa_train, ya_train, 
+                    y_pred_clflra_w,
+                    y_pred_clflra_b,
+                    y_pred_clflra_a,
+                    y_pred_clflra_h,
+                    y_pred_clflra_t,
+                    "Greens"
+                    )
+
+#%%% Just Hispanic
+# %%%% Model Training
+clflrh = LogisticRegression().fit(Xh_train, yh_train)
+#Note: notation is y_pred_clflrw_b means white trained, black tested
+y_pred_clflrh_w = clflrh.predict(Xw_test)
+y_pred_clflrh_b = clflrh.predict(Xb_test)
+y_pred_clflrh_a = clflrh.predict(Xa_test)
+y_pred_clflrh_h = clflrh.predict(Xh_test)
+y_pred_clflrh_t = clflrh.predict(Xt_test)
+
+
+#%%%% Model Metrics
+clflrh_ethnic_acc, clflrh_comm_acc, clflrh_miss_ethnic, clflrh_miss_comm = ethnic_spec_metrics(
+                    clflrh, Xh_train, yh_train, 
+                    y_pred_clflrh_w,
+                    y_pred_clflrh_b,
+                    y_pred_clflrh_a,
+                    y_pred_clflrh_h,
+                    y_pred_clflrh_t,
+                    "Purples"
+                    )
