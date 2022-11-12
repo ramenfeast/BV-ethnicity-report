@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[13]:
 
 
 import numpy as np
@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns   
 from sklearn.ensemble import RandomForestClassifier
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
+from mlxtend.plotting import plot_sequential_feature_selection as plot_sfs
 from sklearn.metrics import accuracy_score as acc
 
 
-# In[2]:
+# In[14]:
 
 
 url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/BV%20Dataset%20copy.csv"
@@ -62,7 +63,7 @@ y_test[y_test<7]=0
 y_test[y_test>=7]=1
 
 
-# In[3]:
+# In[15]:
 
 
 clfrf = RandomForestClassifier().fit(X_train, y_train)
@@ -70,11 +71,19 @@ clfrf = RandomForestClassifier().fit(X_train, y_train)
 # Step forward feature selection
 #k_feature how many features to select
 #verbose=2 model summary each iteration
-sf = sfs(clfrf,k_features=16,forward=True,verbose=2,scoring='neg_mean_squared_error')
+sf = sfs(clfrf,k_features=3,forward=True, scoring='accuracy')
 sf.fit(X_train, y_train)
 
 feat_names = list(sf.k_feature_names_)
 print(feat_names)
+
+
+# In[16]:
+
+
+# Plot the model accuracy
+plot_sfs(sf.get_metric_dict())
+plt.show()
 
 
 # In[ ]:
