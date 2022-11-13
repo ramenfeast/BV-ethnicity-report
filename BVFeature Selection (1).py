@@ -194,7 +194,7 @@ print(sorted_feature_names)
 
 #print(X_train.columns)
 
-#sorted_importances = feature_importances[sorted_indices]
+sorted_importances = feature_importances[sorted_indices]
 #print(sorted_importances)
 
  
