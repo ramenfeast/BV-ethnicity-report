@@ -23,7 +23,7 @@ from sklearn.ensemble import StackingClassifier
 
 #%%% Random State
 rng = np.random.default_rng()
-rando= rng.integers(0,10000000)
+rando= rng.integers(0,100)
 # %%%learning Curve Function
 
 
