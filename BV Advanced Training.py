@@ -16,15 +16,14 @@ from sklearn.model_selection import learning_curve
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import roc_curve
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
 import seaborn as sns
 from sklearn.ensemble import StackingClassifier
 
 #%%% Random State
-rando=1
+rng = np.random.default_rng()
+rando= rng.integers(0,10000000)
 # %%%learning Curve Function
 
 
@@ -177,47 +176,44 @@ def missclass_comm(pred, test, save):
     missclass_breakdown['IV']=100*tracker[3]/y
     return missclass_breakdown
 
-#%%% ROC Function
-
-def plot_ROC(clf, X_test, y_test):
-    y_score = clf.decision_function(X_test)
-
-    fpr, tpr, _ = roc_curve(y_test, y_score, pos_label=clf.classes_[1])
-    roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr).plot()
 
 #%%% Confusion Matrix Function
 
-def plot_CM(y_test, y_pred):
-    cm = confusion_matrix(y_test, y_pred)
+def plot_confusion_matrix(test, pred, color, title, fignum):
+    cm=confusion_matrix(test,pred)
 
-    cm_display = ConfusionMatrixDisplay(cm).plot()
+    plt.figure(fignum)
+    ax=plt.subplot()
+# annot=True to annotate cells, ftm='g' to disable scientific notation
+    sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap=sns.color_palette(color));
+ # labels, title and ticks
+    ax.set_xlabel('Predicted labels'); ax.set_ylabel('True labels');
+    ax.set_title(title);
+    ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels(
+    ['BV Positive', 'BV Negative']);
 
 # %%% Ethnic Trained Metrics
-def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, predt  ):
+def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, predt, color,  ):
     plt.figure(0)
     plot_learning_curve(classifier, xtrain, ytrain, "Classifier Learning Curve")
 
     plt.figure(1)
-    plot_ROC(classifier, Xw_test, yw_test)
+    RocCurveDisplay.from_estimator(classifier, Xw_test, yw_test)
     plt.figure(2)
-    plot_ROC(classifier, Xb_test, yb_test)
+    RocCurveDisplay.from_estimator(classifier, Xb_test, yb_test)
     plt.figure(3)
-    plot_ROC(classifier, Xa_test, ya_test)
+    RocCurveDisplay.from_estimator(classifier, Xa_test, ya_test)
     plt.figure(4)
-    plot_ROC(classifier, Xh_test, yh_test)
+    RocCurveDisplay.from_estimator(classifier, Xh_test, yh_test)
     plt.figure(5)
-    plot_ROC(classifier, Xt_test, yt_test)
+    RocCurveDisplay.from_estimator(classifier, Xt_test, yt_test)
 
     plt.figure(6)
-    plot_CM(yw_test, predw)
-    plt.figure(7)
-    plot_CM(yb_test, predb)
-    plt.figure(8)
-    plot_CM(ya_test, preda)
-    plt.figure(9)
-    plot_CM(yh_test, predh)
-    plt.figure(10)
-    plot_CM(yt_test, predt)
+    plot_confusion_matrix(yw_test, predw, color, "Confusion Matrix",7)
+    plot_confusion_matrix(yb_test, predb, color, "Confusion Matrix",8)
+    plot_confusion_matrix(ya_test, preda, color, "Confusion Matrix",9)
+    plot_confusion_matrix(yh_test, predh, color, "Confusion Matrix",10)
+    plot_confusion_matrix(yt_test, predt, color, "Confusion Matrix",11)
 
     #Ethnic and Community group Accuracy
     ethnic_acc = ethnic_based_acc(predt, yt_test, es_xttest)
@@ -234,8 +230,9 @@ def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, 
     
     return(ethnic_acc, comm_acc, miss_ethnic, miss_comm)
 
+
 #%%% Ethnic Pipeline
-def ethnic_train_metric_pipe(classifier, xtrain, ytrain):
+def ethnic_train_metric_pipe(classifier, xtrain, ytrain, color):
 
     if classifier == "Logistic Regression": 
         classify = LogisticRegression()
@@ -260,14 +257,17 @@ def ethnic_train_metric_pipe(classifier, xtrain, ytrain):
                     y_pred_clfa,
                     y_pred_clfh,
                     y_pred_clft,
+                    color
                     )
     return(classify)
 
 #%%% Ethnic Based Stacking Classifier Pipeline
-def ethnic_stack_pipe(clfw, clfb, clfa, clfh):
-    estimators = [clfw, clfb, clfa, clfh]
-    clf = StackingClassifier(estimators = estimators, cv = "prefit")
-    clf.fit(Xt_train, yt_train)
+def ethnic_stack_pipe(clfw, clfb, clfa, clfh, color):
+    estimators = [('clfw',clfw), ('clfb', clfb), ('clfa',clfa), ('clfh', clfh)]
+    clf = StackingClassifier(
+        estimators = estimators, 
+        final_estimator = LogisticRegression(), cv= 'prefit')
+    clf.fit(Xt_train,yt_train)
     
     y_pred_clfw = clf.predict(Xw_test)
     y_pred_clfb = clf.predict(Xb_test)
@@ -282,8 +282,10 @@ def ethnic_stack_pipe(clfw, clfb, clfa, clfh):
                     y_pred_clfa,
                     y_pred_clfh,
                     y_pred_clft,
+                    color
                     )
     return(clf)
+
 # %% Import and Clean Data
 # %%% Import Data
 
@@ -422,15 +424,46 @@ yh_test[yh_test >= 7] = 1
 
 # %% Logistic Regression (Ethnic Isolated)
 #%%% Just White
-clflrw = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
+clflrw = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Blues")
 
 #%%% Just Black
-clflrb = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
+clflrb = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Reds")
 
 #%%% Just Asian
-clflra = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
+clflra = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Greens")
 
 #%%% Just Hispanic
-clflrh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
+clflrh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Purples")
 
+#%%% Stack
+clflrt = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 
+#%% Random Forest (Ethnic Isolated)
+#%%% Just White
+clfrfw = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Blues")
+
+#%%% Just Black
+clfrfb = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Reds")
+
+#%%% Just Asian
+clfrfa = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Greens")
+
+#%%% Just Hispanic
+clfrfh = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Purples")
+#%%% Stack
+clfrft = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
+
+#%% Multinomial Naive Bayes (Ethnic Isolated)
+#%%% Just White
+clfmnbw = ethnic_train_metric_pipe("MNB", Xh_train, yh_train, "Blues")
+
+#%%% Just Black
+clfmnbb = ethnic_train_metric_pipe("MNB", Xh_train, yh_train, "Reds")
+
+#%%% Just Asian
+clfmnba = ethnic_train_metric_pipe("MNB", Xh_train, yh_train, "Greens")
+
+#%%% Just Hispanic
+clfmnbh = ethnic_train_metric_pipe("MNB", Xh_train, yh_train, "Purples")
+#%%% Stack
+clfmnbt = ethnic_stack_pipe(clfmnbw,clfmnbb,clfmnba,clfmnbh, "Oranges")
