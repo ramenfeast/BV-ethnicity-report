@@ -16,9 +16,12 @@ from sklearn.model_selection import learning_curve
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import roc_curve
 from sklearn.metrics import RocCurveDisplay
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
 import seaborn as sns
+from sklearn.ensemble import StackingClassifier
 
 #%%% Random State
 rando=1
@@ -48,20 +51,7 @@ def plot_learning_curve(clf, Xtrain, ytrain, title):
     plt.title(title, fontsize=18, y=1.03)
     plt.legend()
     
-# %%% Confusion Matrix Function
 
-def plot_confusion_matrix(test, pred, color, title, fignum):
-    cm=confusion_matrix(test,pred)
-    plt.figure(fignum)
-    ax=plt.subplot()
-# annot=True to annotate cells, ftm='g' to disable scientific notation
-    sns.heatmap(cm, annot=True, fmt='g', ax=ax, cmap=sns.color_palette(color));
-
-# labels, title and ticks
-    ax.set_xlabel('Predicted labels'); ax.set_ylabel('True labels');
-    ax.set_title(title);
-    ax.xaxis.set_ticklabels(['BV Positive', 'BV Negative']); ax.yaxis.set_ticklabels(
-    ['BV Positive', 'BV Negative']);
 
 # %%% Ethnicity checked accuracy function
 
@@ -187,28 +177,47 @@ def missclass_comm(pred, test, save):
     missclass_breakdown['IV']=100*tracker[3]/y
     return missclass_breakdown
 
+#%%% ROC Function
+
+def plot_ROC(clf, X_test, y_test):
+    y_score = clf.decision_function(X_test)
+
+    fpr, tpr, _ = roc_curve(y_test, y_score, pos_label=clf.classes_[1])
+    roc_display = RocCurveDisplay(fpr=fpr, tpr=tpr).plot()
+
+#%%% Confusion Matrix Function
+
+def plot_CM(y_test, y_pred):
+    cm = confusion_matrix(y_test, y_pred)
+
+    cm_display = ConfusionMatrixDisplay(cm).plot()
+
 # %%% Ethnic Trained Metrics
-def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, predt, color,  ):
+def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, predt  ):
     plt.figure(0)
     plot_learning_curve(classifier, xtrain, ytrain, "Classifier Learning Curve")
 
     plt.figure(1)
-    RocCurveDisplay.from_estimator(classifier, Xw_test, yw_test)
+    plot_ROC(classifier, Xw_test, yw_test)
     plt.figure(2)
-    RocCurveDisplay.from_estimator(classifier, Xb_test, yb_test)
+    plot_ROC(classifier, Xb_test, yb_test)
     plt.figure(3)
-    RocCurveDisplay.from_estimator(classifier, Xa_test, ya_test)
+    plot_ROC(classifier, Xa_test, ya_test)
     plt.figure(4)
-    RocCurveDisplay.from_estimator(classifier, Xh_test, yh_test)
+    plot_ROC(classifier, Xh_test, yh_test)
     plt.figure(5)
-    RocCurveDisplay.from_estimator(classifier, Xt_test, yt_test)
+    plot_ROC(classifier, Xt_test, yt_test)
 
     plt.figure(6)
-    plot_confusion_matrix(yw_test, predw, color, "Confusion Matrix",7)
-    plot_confusion_matrix(yb_test, predb, color, "Confusion Matrix",8)
-    plot_confusion_matrix(ya_test, preda, color, "Confusion Matrix",9)
-    plot_confusion_matrix(yh_test, predh, color, "Confusion Matrix",10)
-    plot_confusion_matrix(yt_test, predt, color, "Confusion Matrix",11)
+    plot_CM(yw_test, predw)
+    plt.figure(7)
+    plot_CM(yb_test, predb)
+    plt.figure(8)
+    plot_CM(ya_test, preda)
+    plt.figure(9)
+    plot_CM(yh_test, predh)
+    plt.figure(10)
+    plot_CM(yt_test, predt)
 
     #Ethnic and Community group Accuracy
     ethnic_acc = ethnic_based_acc(predt, yt_test, es_xttest)
@@ -225,6 +234,56 @@ def ethnic_spec_metrics(classifier, xtrain, ytrain, predw, predb, preda, predh, 
     
     return(ethnic_acc, comm_acc, miss_ethnic, miss_comm)
 
+#%%% Ethnic Pipeline
+def ethnic_train_metric_pipe(classifier, xtrain, ytrain):
+
+    if classifier == "Logistic Regression": 
+        classify = LogisticRegression()
+    elif classifier == "Random Forest":
+        classify = RandomForestClassifier()
+    elif classifier == "MNB":
+        classify = MultinomialNB()
+        
+    
+    classify.fit(xtrain, ytrain)
+
+    y_pred_clfw = classify.predict(Xw_test)
+    y_pred_clfb = classify.predict(Xb_test)
+    y_pred_clfa = classify.predict(Xa_test)
+    y_pred_clfh = classify.predict(Xh_test)
+    y_pred_clft = classify.predict(Xt_test)
+
+    clf_ethnic_acc, clf_comm_acc, clf_miss_ethnic, clf_miss_comm = ethnic_spec_metrics(
+                    classify, xtrain, ytrain, 
+                    y_pred_clfw,
+                    y_pred_clfb,
+                    y_pred_clfa,
+                    y_pred_clfh,
+                    y_pred_clft,
+                    )
+    return(classify)
+
+#%%% Ethnic Based Stacking Classifier Pipeline
+def ethnic_stack_pipe(clfw, clfb, clfa, clfh):
+    estimators = [clfw, clfb, clfa, clfh]
+    clf = StackingClassifier(estimators = estimators, cv = "prefit")
+    clf.fit(Xt_train, yt_train)
+    
+    y_pred_clfw = clf.predict(Xw_test)
+    y_pred_clfb = clf.predict(Xb_test)
+    y_pred_clfa = clf.predict(Xa_test)
+    y_pred_clfh = clf.predict(Xh_test)
+    y_pred_clft = clf.predict(Xt_test)
+
+    clf_ethnic_acc, clf_comm_acc, clf_miss_ethnic, clf_miss_comm = ethnic_spec_metrics(
+                    clf, Xt_train, yt_train, 
+                    y_pred_clfw,
+                    y_pred_clfb,
+                    y_pred_clfa,
+                    y_pred_clfh,
+                    y_pred_clft,
+                    )
+    return(clf)
 # %% Import and Clean Data
 # %%% Import Data
 
@@ -363,88 +422,15 @@ yh_test[yh_test >= 7] = 1
 
 # %% Logistic Regression (Ethnic Isolated)
 #%%% Just White
-# %%%% Model Training
-clflrw = LogisticRegression().fit(Xw_train, yw_train)
-#Note: notation is y_pred_clflrw_b means white trained, black tested
-y_pred_clflrw_w = clflrw.predict(Xw_test)
-y_pred_clflrw_b = clflrw.predict(Xb_test)
-y_pred_clflrw_a = clflrw.predict(Xa_test)
-y_pred_clflrw_h = clflrw.predict(Xh_test)
-y_pred_clflrw_t = clflrw.predict(Xt_test)
+clflrw = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
 
-
-#%%%% Model Metrics
-clflrw_ethnic_acc, clflrw_comm_acc, clflrw_miss_ethnic, clflrw_miss_comm = ethnic_spec_metrics(
-                    clflrw, Xw_train, yw_train, 
-                    y_pred_clflrw_w,
-                    y_pred_clflrw_b,
-                    y_pred_clflrw_a,
-                    y_pred_clflrw_h,
-                    y_pred_clflrw_t,
-                    "Blues"
-                    )
 #%%% Just Black
-# %%%% Model Training
-clflrb = LogisticRegression().fit(Xb_train, yb_train)
-#Note: notation is y_pred_clflrw_b means white trained, black tested
-y_pred_clflrb_w = clflrb.predict(Xw_test)
-y_pred_clflrb_b = clflrb.predict(Xb_test)
-y_pred_clflrb_a = clflrb.predict(Xa_test)
-y_pred_clflrb_h = clflrb.predict(Xh_test)
-y_pred_clflrb_t = clflrb.predict(Xt_test)
-
-
-#%%%% Model Metrics
-clflrb_ethnic_acc, clflrb_comm_acc, clflrb_miss_ethnic, clflrb_miss_comm = ethnic_spec_metrics(
-                    clflrb, Xb_train, yb_train, 
-                    y_pred_clflrb_w,
-                    y_pred_clflrb_b,
-                    y_pred_clflrb_a,
-                    y_pred_clflrb_h,
-                    y_pred_clflrb_t,
-                    "Reds"
-                    )
+clflrb = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
 
 #%%% Just Asian
-# %%%% Model Training
-clflra = LogisticRegression().fit(Xa_train, ya_train)
-#Note: notation is y_pred_clflrw_b means white trained, black tested
-y_pred_clflra_w = clflra.predict(Xw_test)
-y_pred_clflra_b = clflra.predict(Xb_test)
-y_pred_clflra_a = clflra.predict(Xa_test)
-y_pred_clflra_h = clflra.predict(Xh_test)
-y_pred_clflra_t = clflra.predict(Xt_test)
-
-
-#%%%% Model Metrics
-clflra_ethnic_acc, clflra_comm_acc, clflra_miss_ethnic, clflra_miss_comm = ethnic_spec_metrics(
-                    clflra, Xa_train, ya_train, 
-                    y_pred_clflra_w,
-                    y_pred_clflra_b,
-                    y_pred_clflra_a,
-                    y_pred_clflra_h,
-                    y_pred_clflra_t,
-                    "Greens"
-                    )
+clflra = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
 
 #%%% Just Hispanic
-# %%%% Model Training
-clflrh = LogisticRegression().fit(Xh_train, yh_train)
-#Note: notation is y_pred_clflrw_b means white trained, black tested
-y_pred_clflrh_w = clflrh.predict(Xw_test)
-y_pred_clflrh_b = clflrh.predict(Xb_test)
-y_pred_clflrh_a = clflrh.predict(Xa_test)
-y_pred_clflrh_h = clflrh.predict(Xh_test)
-y_pred_clflrh_t = clflrh.predict(Xt_test)
+clflrh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train)
 
 
-#%%%% Model Metrics
-clflrh_ethnic_acc, clflrh_comm_acc, clflrh_miss_ethnic, clflrh_miss_comm = ethnic_spec_metrics(
-                    clflrh, Xh_train, yh_train, 
-                    y_pred_clflrh_w,
-                    y_pred_clflrh_b,
-                    y_pred_clflrh_a,
-                    y_pred_clflrh_h,
-                    y_pred_clflrh_t,
-                    "Purples"
-                    )
