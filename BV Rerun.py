@@ -230,6 +230,7 @@ X_test.iloc[:, 1::] = X_test.iloc[:, 1::]/100
 y_train[y_train < 7] = 0
 y_train[y_train >= 7] = 1
 
+
 y_test[y_test < 7] = 0
 y_test[y_test >= 7] = 1
 # %% Logistic Regression (Simple Training)
@@ -300,13 +301,13 @@ RocCurveDisplay.from_estimator(clfmnb, X_test, y_test)
 # %%% MNB Confusion Matrix
 plot_confusion_matrix(y_test, y_pred_clfmnb, "Reds", "Multinomial Naive Bayes Confusion Matrix")
 
-#%%% LR Ethnic and Community group Accuracy
+#%%% MNB Ethnic and Community group Accuracy
 ethnic_acc_clfmnb = ethnic_based_acc(y_pred_clfmnb)
 print(ethnic_acc_clfmnb)
 comm_acc_clfmnb = comm_group_acc(y_pred_clfmnb)
 print(comm_acc_clfmnb)
 
-#%%% LR Ethnic and Community Group Breakdown of Missclassified
+#%%% MNB Ethnic and Community Group Breakdown of Missclassified
 miss_ethnic_clfmnb = missclass_ethnic(y_pred_clfmnb)
 print(miss_ethnic_clfmnb)
 
