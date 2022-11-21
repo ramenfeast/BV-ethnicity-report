@@ -776,12 +776,12 @@ clflrt = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 #clfrfb = ethnic_train_metric_pipe("Random Forest", Xii_train, yii_train, "Reds")
 
 #%%% III
-clfrfa = ethnic_train_metric_pipe("Random Forest", Xiii_train, yiii_train, "Greens")
+clfrfa = comm_train_metric_pipe("Random Forest", Xiii_train, yiii_train, "Greens")
 
 #%%% IV
-clfrfh = ethnic_train_metric_pipe("Random Forest", Xiv_train, yiv_train, "Purples")
+clfrfh = comm_train_metric_pipe("Random Forest", Xiv_train, yiv_train, "Purples")
 #%%% Stack
-clfrft = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
+clfrft = comm_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
 
 #%% SVM (Comm Isolated)
 #%%% I
@@ -791,9 +791,9 @@ clfrft = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
 #clfsvmb = ethnic_train_metric_pipe("SVM", Xii_train, yii_train, "Reds")
 
 #%%% III
-clfsvma = ethnic_train_metric_pipe("SVM", Xiii_train, yiii_train, "Greens")
+clfsvma = comm_train_metric_pipe("SVM", Xiii_train, yiii_train, "Greens")
 
 #%%% IV
-clfsvmh = ethnic_train_metric_pipe("SVM", Xiv_train, yiv_train, "Purples")
+clfsvmh = comm_train_metric_pipe("SVM", Xiv_train, yiv_train, "Purples")
 #%%% Stack
-clfsvmt = ethnic_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
+clfsvmt = comm_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
