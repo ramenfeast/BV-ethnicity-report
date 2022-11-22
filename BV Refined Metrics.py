@@ -9,6 +9,8 @@ Created on Fri Nov 18 10:21:45 2022
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+pd.set_option('display.max_columns', None, 'display.max_rows', None)
 #%%% Random State
 rng = np.random.default_rng()
 #rando= rng.integers(0,100)
@@ -194,7 +196,7 @@ def standard_metrics(ytrue, ypred):
     accuracy = accuracy_score(ytrue, ypred)
     f1 = f1_score(ytrue, ypred)
     precision = precision_score(ytrue, ypred,zero_division=1)
-    recall = recall_score(ytrue, ypred)
+    recall = recall_score(ytrue, ypred, zero_division = 1)
     
     return(accuracy, f1, precision, recall)
 # %%% Ethnic Trained Displays
@@ -252,7 +254,7 @@ def ethnic_spec_metrics(predw, predb, preda, predh, predt):
     miss_comm = missclass_comm(predt, yt_test, cs_xttest)
     print(miss_comm)
     
-    
+    return(ethnic_metrics)
 
 #%%% Ethnic Pipeline
 from sklearn.linear_model import LogisticRegression
@@ -286,12 +288,12 @@ def ethnic_train_metric_pipe(classifier, xtrain, ytrain, color):
                     y_pred_clft,
                     color
                     )
-    ethnic_spec_metrics( y_pred_clfw,
+    ethnic_metrics = ethnic_spec_metrics( y_pred_clfw,
      y_pred_clfb,
      y_pred_clfa,
      y_pred_clfh,
      y_pred_clft,)
-    return(classify)
+    return(classify, ethnic_metrics)
 
 #%%% Ethnic Based Stacking Classifier Pipeline
 from sklearn.ensemble import StackingClassifier
@@ -318,12 +320,34 @@ def ethnic_stack_pipe(clfw, clfb, clfa, clfh, color):
                     y_pred_clft,
                     color
                     )
-    ethnic_spec_metrics( y_pred_clfw,
+    ethnic_metrics = ethnic_spec_metrics( y_pred_clfw,
      y_pred_clfb,
      y_pred_clfa,
      y_pred_clfh,
      y_pred_clft,)
-    return(clf)
+    return(clf, ethnic_metrics)
+
+#%%% Metrics Grid
+def accuracy_grid(clfmw, clfmb, clfma, clfmh, clfmt, clfmst):
+    data = {'White Trained': np.zeros(5),
+        'Black Trained': np.zeros(5),
+        'Asian Trained': np.zeros(5),
+        'Hispanic Trained': np.zeros(5),
+        'Total Trained': np.zeros(5),
+        'Stack Classifier': np.zeros(5)}
+    grid = pd.DataFrame(index = ['White','Black','Asian','Hispanic', 'Total'],
+                    data = data
+                    )
+
+    grid['White Trained'] = clfmw['Accuracy']
+    grid['Black Trained'] = clfmb['Accuracy']
+    grid['Asian Trained'] = clfma['Accuracy']
+    grid['Hispanic Trained'] = clfmh['Accuracy']
+    grid['Total Trained'] = clfmt['Accuracy']
+    grid['Stack Classifier'] = clfmst['Accuracy']
+    
+    print(grid)
+    return(grid)
 
 # %%% Community Group Trained Displays
 def comm_spec_displays(classifier, xtrain, ytrain, predi, predii, prediii, prediv, predt, color,  ):
@@ -342,8 +366,8 @@ def comm_spec_displays(classifier, xtrain, ytrain, predi, predii, prediii, predi
     RocCurveDisplay.from_estimator(classifier, Xt_test, yt_test)
 
     plt.figure(6)
-    plot_confusion_matrix(yi_test, predi, color, "Confusion Matrix",7)
-    plot_confusion_matrix(yii_test, predii, color, "Confusion Matrix",8)
+    #plot_confusion_matrix(yi_test, predi, color, "Confusion Matrix",7)
+   # plot_confusion_matrix(yii_test, predii, color, "Confusion Matrix",8)
     plot_confusion_matrix(yiii_test, prediii, color, "Confusion Matrix",9)
     plot_confusion_matrix(yiii_test, prediv, color, "Confusion Matrix",10)
     plot_confusion_matrix(yiv_test, predt, color, "Confusion Matrix",11)
@@ -446,6 +470,8 @@ def comm_stack_pipe(clfi, clfii, clfiii, clfiv, color):
         y_pred_clfiv,
         y_pred_clft,)
     return(clf)
+
+#%%% Overall Metrics Grid
 
 # %% Import and Clean Data
 # %%% Import Data
@@ -587,50 +613,65 @@ yh_test[yh_test < 7] = 0
 yh_test[yh_test >= 7] = 1
 
 # %% Logistic Regression (Ethnic Isolated)
-#%%% Just White
-clflrw = ethnic_train_metric_pipe("Logistic Regression", Xw_train, yw_train, "Blues")
+#%%% LR Normal Training
+clflrt, clflrmt = ethnic_train_metric_pipe("Logistic Regression", Xt_train, yt_train, "Greys")
+#%%% LR Just White
+clflrw, clflrmw = ethnic_train_metric_pipe("Logistic Regression", Xw_train, yw_train, "Blues")
 
-#%%% Just Black
-clflrb = ethnic_train_metric_pipe("Logistic Regression", Xb_train, yb_train, "Reds")
+#%%% LR Just Black
+clflrb, clflrmb = ethnic_train_metric_pipe("Logistic Regression", Xb_train, yb_train, "Reds")
 
-#%%% Just Asian
-clflra = ethnic_train_metric_pipe("Logistic Regression", Xa_train, ya_train, "Greens")
+#%%% LR Just Asian
+clflra, clflrma = ethnic_train_metric_pipe("Logistic Regression", Xa_train, ya_train, "Greens")
 
-#%%% Just Hispanic
-clflrh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Purples")
+#%%% LR Just Hispanic
+clflrh, clflrmh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Purples")
 
-#%%% Stack
-clflrt = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
+#%%% LR Stack
+clflrst, clflrmst = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 
+#%%% LR Metrics Grid
+lrgrid = accuracy_grid(clflrmw, clflrmb, clflrma,clflrmh,clflrmt,clflrmst)
 #%% Random Forest (Ethnic Isolated)
-#%%% Just White
-clfrfw = ethnic_train_metric_pipe("Random Forest", Xw_train, yw_train, "Blues")
 
-#%%% Just Black
-clfrfb = ethnic_train_metric_pipe("Random Forest", Xb_train, yb_train, "Reds")
+#%%% RF Normal Training
+clfrft, clfrfmt = ethnic_train_metric_pipe("Random Forest", Xt_train, yt_train, "Greys")
+#%%% RF Just White
+clfrfw, clfrfmw = ethnic_train_metric_pipe("Random Forest", Xw_train, yw_train, "Blues")
 
-#%%% Just Asian
-clfrfa = ethnic_train_metric_pipe("Random Forest", Xa_train, ya_train, "Greens")
+#%%% RF Just Black
+clfrfb, clfrfmb = ethnic_train_metric_pipe("Random Forest", Xb_train, yb_train, "Reds")
 
-#%%% Just Hispanic
-clfrfh = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Purples")
-#%%% Stack
-clfrft = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
+#%%% RF Just Asian
+clfrfa, clfrfma = ethnic_train_metric_pipe("Random Forest", Xa_train, ya_train, "Greens")
 
+#%%% RF Just Hispanic
+clfrfh, clfrfmh = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Purples")
+
+#%%% RF Stack
+clfrft, clfrfmst = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
+
+#%%% RF Metrics Grid
+lrgrid = accuracy_grid(clfrfmw, clfrfmb, clfrfma,clfrfmh,clfrfmt,clfrfmst)
 #%% SVM (Ethnic Isolated)
-#%%% Just White
-clfsvmw = ethnic_train_metric_pipe("SVM", Xw_train, yw_train, "Blues")
+#%%% SVM Normal Training
+clfsvmt, clfsvmmt = ethnic_train_metric_pipe("SVM", Xt_train, yt_train, "Greys")
+#%%% SVM Just White
+clfsvmw, clfsvmmw = ethnic_train_metric_pipe("SVM", Xw_train, yw_train, "Blues")
 
-#%%% Just Black
-clfsvmb = ethnic_train_metric_pipe("SVM", Xb_train, yb_train, "Reds")
+#%%% SVM Just Black
+clfsvmb, clfsvmmb = ethnic_train_metric_pipe("SVM", Xb_train, yb_train, "Reds")
 
-#%%% Just Asian
-clfsvma = ethnic_train_metric_pipe("SVM", Xa_train, ya_train, "Greens")
+#%%% SVM Just Asian
+clfsvma, clfsvmma = ethnic_train_metric_pipe("SVM", Xa_train, ya_train, "Greens")
 
-#%%% Just Hispanic
-clfsvmh = ethnic_train_metric_pipe("SVM", Xh_train, yh_train, "Purples")
-#%%% Stack
-clfsvmt = ethnic_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
+#%%% SVM Just Hispanic
+clfsvmh, clfsvmmh = ethnic_train_metric_pipe("SVM", Xh_train, yh_train, "Purples")
+#%%% SVM Stack
+clfsvmt, clfsvmmst = ethnic_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
+
+#%%% SVM Metrics Grid
+svmgrid = accuracy_grid(clfsvmmw, clfsvmmb, clfsvmma,clfsvmmh,clfsvmmt,clfsvmmst)
 # %% Train Test Split and Normalization (Community Group Isolated)
 #%%% Initial X y split
 X_total = df.iloc[:, :-1]
@@ -760,13 +801,13 @@ yiv_test[yiv_test >= 7] = 1
 #clflrii = ethnic_train_metric_pipe("Logistic Regression", Xii_train, yii_train, "Reds")
 
 #%%% III
-clflriii = ethnic_train_metric_pipe("Logistic Regression", Xiii_train, yiii_train, "Greens")
+#clflriii = comm_train_metric_pipe("Logistic Regression", Xiii_train, yiii_train, "Greens")
 
 #%%% IV
-clflriv = ethnic_train_metric_pipe("Logistic Regression", Xiv_train, yiv_train, "Purples")
+#clflriv = comm_train_metric_pipe("Logistic Regression", Xiv_train, yiv_train, "Purples")
 
 #%%% Stack
-clflrt = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
+#clflrt = comm_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 
 #%% Random Forest (Comm Isolated)
 #%%% I
@@ -776,12 +817,12 @@ clflrt = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 #clfrfb = ethnic_train_metric_pipe("Random Forest", Xii_train, yii_train, "Reds")
 
 #%%% III
-clfrfa = comm_train_metric_pipe("Random Forest", Xiii_train, yiii_train, "Greens")
+#clfrfa = comm_train_metric_pipe("Random Forest", Xiii_train, yiii_train, "Greens")
 
 #%%% IV
-clfrfh = comm_train_metric_pipe("Random Forest", Xiv_train, yiv_train, "Purples")
+#clfrfh = comm_train_metric_pipe("Random Forest", Xiv_train, yiv_train, "Purples")
 #%%% Stack
-clfrft = comm_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
+#clfrft = comm_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
 
 #%% SVM (Comm Isolated)
 #%%% I
@@ -791,9 +832,9 @@ clfrft = comm_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
 #clfsvmb = ethnic_train_metric_pipe("SVM", Xii_train, yii_train, "Reds")
 
 #%%% III
-clfsvma = comm_train_metric_pipe("SVM", Xiii_train, yiii_train, "Greens")
+#clfsvma = comm_train_metric_pipe("SVM", Xiii_train, yiii_train, "Greens")
 
 #%%% IV
-clfsvmh = comm_train_metric_pipe("SVM", Xiv_train, yiv_train, "Purples")
+#clfsvmh = comm_train_metric_pipe("SVM", Xiv_train, yiv_train, "Purples")
 #%%% Stack
-clfsvmt = comm_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
+#clfsvmt = comm_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
