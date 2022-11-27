@@ -9,6 +9,7 @@ Created on Fri Nov 18 10:21:45 2022
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sys import exit
 
 pd.set_option('display.max_columns', None, 'display.max_rows', None)
 #%%% Random State
@@ -194,7 +195,7 @@ from sklearn.metrics import recall_score
 
 def standard_metrics(ytrue, ypred):
     accuracy = accuracy_score(ytrue, ypred)
-    f1 = f1_score(ytrue, ypred)
+    f1 = f1_score(ytrue, ypred, zero_division = 1)
     precision = precision_score(ytrue, ypred,zero_division=1)
     recall = recall_score(ytrue, ypred, zero_division = 1)
     
@@ -260,40 +261,60 @@ def ethnic_spec_metrics(predw, predb, preda, predh, predt):
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RepeatedStratifiedKFold
 
 def ethnic_train_metric_pipe(classifier, xtrain, ytrain, color):
 
     if classifier == "Logistic Regression": 
         classify = LogisticRegression()
+        solvers = ['newton-cg', 'lbfgs', 'liblinear']
+        penalty = ['l2']
+        c_values = [100, 10, 1.0, 0.1, 0.01]
+        # define grid search
+        grid = dict(solver=solvers,penalty=penalty,C=c_values)
+        
+        
     elif classifier == "Random Forest":
         classify = RandomForestClassifier()
+        n_estimators = [10, 100, 1000]
+        max_features = ['sqrt', 'log2']
+        # define grid search
+        grid = dict(n_estimators=n_estimators,max_features=max_features)
+        
     elif classifier == "SVM":
         classify = SVC()
+        kernel = ['poly', 'rbf', 'sigmoid']
+        C = [50, 10, 1.0, 0.1, 0.01]
+        gamma = ['scale']
+        # define grid search
+        grid = dict(kernel=kernel,C=C,gamma=gamma)
         
-    
-    classify.fit(xtrain, ytrain)
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=rando)
+    grid_search = GridSearchCV(estimator=classify, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy',error_score=0)
+    clf = grid_search.fit(xtrain, ytrain)
 
-    y_pred_clfw = classify.predict(Xw_test)
-    y_pred_clfb = classify.predict(Xb_test)
-    y_pred_clfa = classify.predict(Xa_test)
-    y_pred_clfh = classify.predict(Xh_test)
-    y_pred_clft = classify.predict(Xt_test)
+    y_pred_clfw = clf.predict(Xw_test)
+    y_pred_clfb = clf.predict(Xb_test)
+    y_pred_clfa = clf.predict(Xa_test)
+    y_pred_clfh = clf.predict(Xh_test)
+    y_pred_clft = clf.predict(Xt_test)
 
-    ethnic_spec_displays(
-                    classify, xtrain, ytrain, 
-                    y_pred_clfw,
-                    y_pred_clfb,
-                    y_pred_clfa,
-                    y_pred_clfh,
-                    y_pred_clft,
-                    color
-                    )
+    #ethnic_spec_displays(
+                   # clf, xtrain, ytrain, 
+                   # y_pred_clfw,
+                   # y_pred_clfb,
+                   # y_pred_clfa,
+                   # y_pred_clfh,
+                   # y_pred_clft,
+                   # color
+                   # )
     ethnic_metrics = ethnic_spec_metrics( y_pred_clfw,
      y_pred_clfb,
      y_pred_clfa,
      y_pred_clfh,
      y_pred_clft,)
-    return(classify, ethnic_metrics)
+    return(clf, ethnic_metrics)
 
 #%%% Ethnic Based Stacking Classifier Pipeline
 from sklearn.ensemble import StackingClassifier
@@ -311,15 +332,15 @@ def ethnic_stack_pipe(clfw, clfb, clfa, clfh, color):
     y_pred_clfh = clf.predict(Xh_test)
     y_pred_clft = clf.predict(Xt_test)
 
-    ethnic_spec_displays(
-                    clf, Xt_train, yt_train, 
-                    y_pred_clfw,
-                    y_pred_clfb,
-                    y_pred_clfa,
-                    y_pred_clfh,
-                    y_pred_clft,
-                    color
-                    )
+    #ethnic_spec_displays(
+                    #clf, Xt_train, yt_train, 
+                   # y_pred_clfw,
+                   # y_pred_clfb,
+                   # y_pred_clfa,
+                   # y_pred_clfh,
+                   # y_pred_clft,
+                   # color
+                   # )
     ethnic_metrics = ethnic_spec_metrics( y_pred_clfw,
      y_pred_clfb,
      y_pred_clfa,
@@ -483,10 +504,9 @@ url = "https://raw.githubusercontent.com/ramenfeast/BV-ethnicity-report/main/BV%
 download = requests.get(url).content
 df = pd.read_csv(io.StringIO(download.decode('utf-8')))
 
-print(df)
-
 # %%%Clean data
 df = df.drop([394, 395, 396], axis=0)
+
 
 # %% Train Test Split and Normalization (Ethnic Isolated)
 #%%% Initial X y split
@@ -497,7 +517,7 @@ y_total = df.iloc[:, -1]
 from sklearn.model_selection import train_test_split
 
 Xt_train, Xt_test, yt_train, yt_test = train_test_split(
-    X_total, y_total, test_size=0.2, random_state=1)
+    X_total, y_total, test_size=0.2, random_state=rando, stratify = y_total)
 # %%% Sort and Split Ethnicities
 X_w = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'White']
 X_b = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'Black']
@@ -512,16 +532,16 @@ y_h = yt_train.loc[Xt_train['Ethnic Groupa'] == 'Hispanic']
 
 # %%% Test Train Split
 Xw_train, Xw_test, yw_train, yw_test = train_test_split(
-    X_w, y_w, test_size=0.2, random_state=rando)
+    X_w, y_w, test_size=0.2, random_state=rando, stratify = None)
 
 Xb_train, Xb_test, yb_train, yb_test = train_test_split(
-    X_b, y_b, test_size=0.2, random_state=rando)
+    X_b, y_b, test_size=0.2, random_state=rando, stratify = None)
 
 Xa_train, Xa_test, ya_train, ya_test = train_test_split(
-    X_a, y_a, test_size=0.2, random_state=rando)
+    X_a, y_a, test_size=0.2, random_state=rando, stratify = None)
 
 Xh_train, Xh_test, yh_train, yh_test = train_test_split(
-    X_h, y_h, test_size=0.2, random_state=rando)
+    X_h, y_h, test_size=0.2, random_state=rando, stratify = None)
 
 #%%% Save Demographic Info on overall data
 es_xttest = Xt_test[['Ethnic Groupa']].copy()
@@ -612,66 +632,130 @@ yh_train[yh_train >= 7] = 1
 yh_test[yh_test < 7] = 0
 yh_test[yh_test >= 7] = 1
 
+# %% Data Overview
+#%%% Classification Breakdown
+print('General Breakdown of ethnicity: \n', df['Ethnic Groupa'].value_counts())
+print('Classification of Total Data is: \n', yt_train.value_counts()+yt_test.value_counts())
+print('Classification of White is: \n',yw_train.value_counts()+yt_test.value_counts())
+print('Classification of Black is: \n',yb_train.value_counts()+yt_test.value_counts())
+print('Classification of Asian is: \n',ya_train.value_counts()+yt_test.value_counts())
+print('Classification of Hispanic is: \n',yh_train.value_counts()+yt_test.value_counts())
+
+#%%% Test Train breakdown
+Xt_test_count,_ = Xt_test.shape
+Xw_test_count,_ = Xw_test.shape
+Xb_test_count,_ = Xb_test.shape
+Xa_test_count,_ = Xa_test.shape
+Xh_test_count,_ = Xh_test.shape
+
+Xt_train_count,_ = Xt_train.shape
+Xw_train_count,_ = Xw_train.shape
+Xb_train_count,_ = Xb_train.shape
+Xa_train_count,_ = Xa_train.shape
+Xh_train_count,_ = Xh_train.shape
+
+train_spread = pd.DataFrame(index = ['Percent Representation'])
+train_spread['White'] = Xw_train_count/Xt_train_count*100
+train_spread['Black'] = Xb_train_count/Xt_train_count*100
+train_spread['Asian'] = Xa_train_count/Xt_train_count*100
+train_spread['Hispanic'] = Xh_train_count/Xt_train_count*100
+
+test_spread = pd.DataFrame(index = ['Percent Representation'])
+test_spread['White'] = Xw_test_count/Xt_test_count*100
+test_spread['Black'] = Xb_test_count/Xt_test_count*100
+test_spread['Asian'] = Xa_test_count/Xt_test_count*100
+test_spread['Hispanic'] = Xh_test_count/Xt_test_count*100
+
+print('Train Data Breakdown: \n', train_spread, '\nTest Data Breakdown: \n', test_spread)
 # %% Logistic Regression (Ethnic Isolated)
+
+print('Ethnic Isolated Logistic Regression Tests')
 #%%% LR Normal Training
+print('LR Normal Training')
 clflrt, clflrmt = ethnic_train_metric_pipe("Logistic Regression", Xt_train, yt_train, "Greys")
 #%%% LR Just White
+print('LR Just White Trained')
 clflrw, clflrmw = ethnic_train_metric_pipe("Logistic Regression", Xw_train, yw_train, "Blues")
 
 #%%% LR Just Black
+print('LR Just Black Trained')
 clflrb, clflrmb = ethnic_train_metric_pipe("Logistic Regression", Xb_train, yb_train, "Reds")
 
 #%%% LR Just Asian
+print('LR Just Asian Trained')
 clflra, clflrma = ethnic_train_metric_pipe("Logistic Regression", Xa_train, ya_train, "Greens")
 
 #%%% LR Just Hispanic
+print('LR Just Hispanic Trained')
 clflrh, clflrmh = ethnic_train_metric_pipe("Logistic Regression", Xh_train, yh_train, "Purples")
 
 #%%% LR Stack
+print('LR Stacked')
 clflrst, clflrmst = ethnic_stack_pipe(clflrh,clflrb,clflra,clflrh, "Oranges")
 
 #%%% LR Metrics Grid
+print('LR Accuracy Grid')
 lrgrid = accuracy_grid(clflrmw, clflrmb, clflrma,clflrmh,clflrmt,clflrmst)
 #%% Random Forest (Ethnic Isolated)
+print('Ethnic Isolated Random Forest Tests')
 
 #%%% RF Normal Training
+print('Random Forest Normal training')
 clfrft, clfrfmt = ethnic_train_metric_pipe("Random Forest", Xt_train, yt_train, "Greys")
 #%%% RF Just White
+print('Random Forest Just White Trained')
 clfrfw, clfrfmw = ethnic_train_metric_pipe("Random Forest", Xw_train, yw_train, "Blues")
 
 #%%% RF Just Black
+print('Random Forest Just Black Trained')
 clfrfb, clfrfmb = ethnic_train_metric_pipe("Random Forest", Xb_train, yb_train, "Reds")
 
 #%%% RF Just Asian
+print('Random Forest Just Asian Trained')
 clfrfa, clfrfma = ethnic_train_metric_pipe("Random Forest", Xa_train, ya_train, "Greens")
 
 #%%% RF Just Hispanic
+print('Random Forest Just Hispanic Trained')
 clfrfh, clfrfmh = ethnic_train_metric_pipe("Random Forest", Xh_train, yh_train, "Purples")
 
 #%%% RF Stack
+print('Random Forest Stacked')
 clfrft, clfrfmst = ethnic_stack_pipe(clfrfw,clfrfb,clfrfa,clfrfh, "Oranges")
 
 #%%% RF Metrics Grid
+print('Random Forest Accuracy Grid')
 lrgrid = accuracy_grid(clfrfmw, clfrfmb, clfrfma,clfrfmh,clfrfmt,clfrfmst)
 #%% SVM (Ethnic Isolated)
+print('Ethnic Isolated Support Vector Machine Tests')
 #%%% SVM Normal Training
+print('SVM Normal Training')
 clfsvmt, clfsvmmt = ethnic_train_metric_pipe("SVM", Xt_train, yt_train, "Greys")
 #%%% SVM Just White
+print('SVM Just White Trained')
 clfsvmw, clfsvmmw = ethnic_train_metric_pipe("SVM", Xw_train, yw_train, "Blues")
 
 #%%% SVM Just Black
+print('SVM Just Black Trained')
 clfsvmb, clfsvmmb = ethnic_train_metric_pipe("SVM", Xb_train, yb_train, "Reds")
 
 #%%% SVM Just Asian
+print('SVM Just Asian Trained')
 clfsvma, clfsvmma = ethnic_train_metric_pipe("SVM", Xa_train, ya_train, "Greens")
 
 #%%% SVM Just Hispanic
+print('SVM Just Hispanic Trained')
 clfsvmh, clfsvmmh = ethnic_train_metric_pipe("SVM", Xh_train, yh_train, "Purples")
 #%%% SVM Stack
+print('SVM Stacked')
 clfsvmt, clfsvmmst = ethnic_stack_pipe(clfsvmw,clfsvmb,clfsvma,clfsvmh, "Oranges")
 
 #%%% SVM Metrics Grid
+print('SVM Accuracy Grid')
 svmgrid = accuracy_grid(clfsvmmw, clfsvmmb, clfsvmma,clfsvmmh,clfsvmmt,clfsvmmst)
+
+#%% Temporary Stop, delete when finished
+
+exit("Only doing ethnicity")
 # %% Train Test Split and Normalization (Community Group Isolated)
 #%%% Initial X y split
 X_total = df.iloc[:, :-1]
