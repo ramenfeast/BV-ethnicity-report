@@ -15,7 +15,7 @@ pd.set_option('display.max_columns', None, 'display.max_rows', None)
 #%%% Random State
 rng = np.random.default_rng()
 #rando= rng.integers(0,100)
-rando = 1
+rando = 0
 # %%%learning Curve Function
 
 from sklearn.model_selection import learning_curve
@@ -34,7 +34,7 @@ def plot_learning_curve(clf, Xtrain, ytrain, title):
     print('\n', '-' * 20)  # separator
     print('\nMean validation scores\n\n', pd.Series(
         validation_scores_mean, index=train_sizes))
-
+    plt.subplot()
     plt.style.use('seaborn')
     plt.plot(train_sizes, train_scores_mean, label='Training error')
     plt.plot(train_sizes, validation_scores_mean, label='Validation error')
@@ -290,9 +290,10 @@ def ethnic_train_metric_pipe(classifier, xtrain, ytrain, color):
         # define grid search
         grid = dict(kernel=kernel,C=C,gamma=gamma)
         
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=rando)
-    grid_search = GridSearchCV(estimator=classify, param_grid=grid, n_jobs=-1, cv=cv, scoring='accuracy',error_score=0)
+    #cv = RepeatedStratifiedKFold(n_splits=2, n_repeats=3, random_state=rando)
+    grid_search = GridSearchCV(estimator=classify, param_grid=grid, n_jobs=-1, cv=10, scoring='accuracy',error_score=0)
     clf = grid_search.fit(xtrain, ytrain)
+    print(clf.best_params_)
 
     y_pred_clfw = clf.predict(Xw_test)
     y_pred_clfb = clf.predict(Xb_test)
@@ -332,15 +333,15 @@ def ethnic_stack_pipe(clfw, clfb, clfa, clfh, color):
     y_pred_clfh = clf.predict(Xh_test)
     y_pred_clft = clf.predict(Xt_test)
 
-    #ethnic_spec_displays(
-                    #clf, Xt_train, yt_train, 
-                   # y_pred_clfw,
-                   # y_pred_clfb,
-                   # y_pred_clfa,
-                   # y_pred_clfh,
-                   # y_pred_clft,
-                   # color
-                   # )
+    ethnic_spec_displays(
+                    clf, Xt_train, yt_train, 
+                    y_pred_clfw,
+                    y_pred_clfb,
+                    y_pred_clfa,
+                    y_pred_clfh,
+                    y_pred_clft,
+                    color
+                    )
     ethnic_metrics = ethnic_spec_metrics( y_pred_clfw,
      y_pred_clfb,
      y_pred_clfa,
@@ -492,8 +493,20 @@ def comm_stack_pipe(clfi, clfii, clfiii, clfiv, color):
         y_pred_clft,)
     return(clf)
 
-#%%% Overall Metrics Grid
+#%%% Test Check Train Check
+def test_check():
+    print('yt', yt_test.value_counts(),
+          'yw',yw_test.value_counts(),
+          'yb',yb_test.value_counts(),
+          'ya',ya_test.value_counts(),
+          'yh',yh_test.value_counts())
 
+def train_check():
+    print('yt', yt_train.value_counts(),
+          'yw',yw_train.value_counts(),
+          'yb',yb_train.value_counts(),
+          'ya',ya_train.value_counts(),
+          'yh',yh_train.value_counts())
 # %% Import and Clean Data
 # %%% Import Data
 
@@ -517,7 +530,7 @@ y_total = df.iloc[:, -1]
 from sklearn.model_selection import train_test_split
 
 Xt_train, Xt_test, yt_train, yt_test = train_test_split(
-    X_total, y_total, test_size=0.2, random_state=rando, stratify = y_total)
+    X_total, y_total, test_size=0.2, random_state=rando, stratify = X_total['Ethnic Groupa'])
 # %%% Sort and Split Ethnicities
 X_w = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'White']
 X_b = Xt_train.loc[Xt_train['Ethnic Groupa'] == 'Black']
@@ -667,6 +680,9 @@ test_spread['Asian'] = Xa_test_count/Xt_test_count*100
 test_spread['Hispanic'] = Xh_test_count/Xt_test_count*100
 
 print('Train Data Breakdown: \n', train_spread, '\nTest Data Breakdown: \n', test_spread)
+
+test_check()
+train_check()
 # %% Logistic Regression (Ethnic Isolated)
 
 print('Ethnic Isolated Logistic Regression Tests')
