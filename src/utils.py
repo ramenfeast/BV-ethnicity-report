@@ -26,6 +26,6 @@ def get_XY():
   return X,y
 #by_ethnicity = lambda  x,y:  [x["Ethnic Groupa"] == y]
 def ethnicities():
-  return np.unique(get_data().to_numpy()[:,0])
+  return get_data().to_numpy()[:,0]
 def groups():
   np.unique(get_data().to_numpy()[:,1])
