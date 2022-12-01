@@ -5,9 +5,9 @@ Created on Thu Dec  1 10:05:21 2022
 @author: celestec
 """
 
-from utils import get_XY, ethnicities
-from group_split import ethnic_split
-from model_training import class_train, ethnic_pred, ethnic_stack_train
+from src.utils import get_XY, ethnicities
+from src.group_split import ethnic_split
+from src.model_training import class_train, ethnic_pred, ethnic_stack_train
 random = 1
 X,y = get_XY()
 ethnic_index = ethnicities()
