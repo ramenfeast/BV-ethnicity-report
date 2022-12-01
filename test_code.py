@@ -8,7 +8,9 @@ Created on Thu Dec  1 10:05:21 2022
 from src.utils import get_XY, ethnicities
 from src.group_split import ethnic_split
 from src.model_training import class_train, ethnic_pred, ethnic_stack_train
+from src.group_metrics import standard_metrics, ethnic_metrics, ethnic_accuracy_grid
 random = 1
+#%%
 X,y = get_XY()
 ethnic_index = ethnicities()
 
@@ -27,3 +29,7 @@ clfs = ethnic_stack_train(clfw, clfb, clfa, clfh, Xt_train, yt_train)
 
 y_pred_clfw, y_pred_clfb,y_pred_clfa, y_pred_clfh, y_pred_clft = ethnic_pred(clfs, Xw_test, Xb_test, Xa_test, Xh_test, Xt_test)
 
+#%%
+acc,f1,p,r = standard_metrics(yt_test, y_pred_clft)
+
+grid
