@@ -6,15 +6,14 @@ Created on Wed Nov 30 2022
 """
 rando = 1
 import pandas as pd
-import utils
 from sklearn.model_selection import train_test_split
 
 #%% Ethnic Splitting
 
-def ethnic_split():
-    
-    X,y = utils.get_XY()
-    ethnic_index = utils.ethnicities()
+def ethnic_split(X,y,ethnic_index, random_state):
+
+    # X,y = utils.get_XY()
+    # ethnic_index = utils.ethnicities()
     X_w = X.loc[ethnic_index == 'White']
     X_b = X.loc[ethnic_index == 'Black']
     X_a = X.loc[ethnic_index == 'Asian']
@@ -26,7 +25,7 @@ def ethnic_split():
     y_h = y.loc[ethnic_index == 'Hispanic']
     
     Xt_train, Xt_test, yt_train, yt_test = train_test_split(
-        X, y, test_size=0.2, random_state=rando, stratify = y)
+        X, y, test_size=0.2, random_state=random_state, stratify = y)
     
     m = 0
     for i in [X_w, X_b, X_a, X_h]:
@@ -56,12 +55,20 @@ def ethnic_split():
             
         m += 1
         
-    return Xt_train, Xt_test, yt_train, yt_test, Xw_train, Xw_test, yw_train, yw_test,Xb_train, Xb_test, yb_train, yb_test,Xa_train, Xa_test, ya_train, ya_test,Xh_train, Xh_test, yh_train, yh_test
+    return (Xt_train, Xt_test, yt_train, yt_test, 
+            Xw_train, Xw_test, yw_train, yw_test,
+            Xb_train, Xb_test, yb_train, yb_test,
+            Xa_train, Xa_test, ya_train, ya_test,
+            Xh_train, Xh_test, yh_train, yh_test)
 
 
 def ethnic_test_train_spread():
     
-    Xt_train, Xt_test, yt_train, yt_test, Xw_train, Xw_test, yw_train, yw_test,Xb_train, Xb_test, yb_train, yb_test,Xa_train, Xa_test, ya_train, ya_test,Xh_train, Xh_test, yh_train, yh_test = ethnic_split()
+    (Xt_train, Xt_test, yt_train, yt_test, 
+     Xw_train, Xw_test, yw_train, yw_test,
+     Xb_train, Xb_test, yb_train, yb_test,
+     Xa_train, Xa_test, ya_train, ya_test,
+     Xh_train, Xh_test, yh_train, yh_test) = ethnic_split()
     
     Xt_test_count,_ = Xt_test.shape
     Xw_test_count,_ = Xw_test.shape
@@ -109,10 +116,10 @@ def ethnic_test_train_spread():
 
 #%% Community Group Split
 
-def comm_group_split():
-    
-    X,y = utils.get_XY()
-    comm_index = utils.groups()
+def comm_group_split(X,y,comm_index, random_state):
+
+    # X,y = utils.get_XY()
+    # comm_index = utils.groups()
     X_i = X.loc[comm_index == 'I']
     X_ii = X.loc[comm_index == 'II']
     X_iii = X.loc[comm_index == 'III']
@@ -126,7 +133,7 @@ def comm_group_split():
     y_v = y.loc[comm_index == 'V']
     
     Xt_train, Xt_test, yt_train, yt_test = train_test_split(
-        X, y, test_size=0.2, random_state=rando, stratify = y)
+        X, y, test_size=0.2, random_state=random_state, stratify = y)
     
     m = 0
     for i in [X_i, X_ii, X_iii, X_iv, X_v]:
@@ -161,12 +168,22 @@ def comm_group_split():
             
         m += 1
         
-    return Xt_train, Xt_test, yt_train, yt_test, Xi_train, Xi_test, yi_train, yi_test,Xii_train, Xii_test, yii_train, yii_test,Xiii_train, Xiii_test, yiii_train, yiii_test,Xiv_train, Xiv_test, yiv_train, yiv_test, Xv_train, Xv_test, yv_train, yv_test 
+    return (Xt_train, Xt_test, yt_train, yt_test, 
+            Xi_train, Xi_test, yi_train, yi_test,
+            Xii_train, Xii_test, yii_train, yii_test,
+            Xiii_train, Xiii_test, yiii_train, yiii_test,
+            Xiv_train, Xiv_test, yiv_train, yiv_test, 
+            Xv_train, Xv_test, yv_train, yv_test) 
 
 
 def comm_group_test_train_spread():
     
-    Xt_train, Xt_test, yt_train, yt_test, Xi_train, Xi_test, yi_train, yi_test,Xii_train, Xii_test, yii_train, yii_test,Xiii_train, Xiii_test, yiii_train, yiii_test,Xiv_train, Xiv_test, yiv_train, yiv_test, Xv_train, Xv_test, yv_train, yv_test=comm_group_split()
+    (Xt_train, Xt_test, yt_train, yt_test, 
+     Xi_train, Xi_test, yi_train, yi_test,
+     Xii_train, Xii_test, yii_train, yii_test,
+     Xiii_train, Xiii_test, yiii_train, yiii_test,
+     Xiv_train, Xiv_test, yiv_train, yiv_test, 
+     Xv_train, Xv_test, yv_train, yv_test)=comm_group_split()
     
     Xt_test_count,_ = Xt_test.shape
     Xi_test_count,_ = Xi_test.shape
