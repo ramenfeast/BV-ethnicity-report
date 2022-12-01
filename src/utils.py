@@ -20,12 +20,12 @@ def get_XY():
   #Normalize 16s RNA data
   # have we  tried log scaling the RNA data?
   X.iloc[:,1::]=X.iloc[:,1::]/100
-  #%%Binary y
+  #Binary y
   y[y<7]=0
   y[y>=7]=1
   return X,y
 #by_ethnicity = lambda  x,y:  [x["Ethnic Groupa"] == y]
 def ethnicities():
-  return get_data().to_numpy()[:,0]
+    return get_data().to_numpy()[:,0]
 def groups():
-  np.unique(get_data().to_numpy()[:,1])
+    return get_data().to_numpy()[:,1]
