@@ -88,6 +88,7 @@ def ethnic_pred_metric_pipe(classifiers, Xtest, ytest):
     grid = pd.DataFrame(index = ['White','Black','Asian','Hispanic', 'Total'],
                     data = data
                     )
+    z = 0
     for clf in classifiers:
         predictions = []
         x = 0
@@ -95,9 +96,7 @@ def ethnic_pred_metric_pipe(classifiers, Xtest, ytest):
             pred = clf.predict(test)
             predictions[x]=pred
             x+=1
-        y = 0
-        accuracies = []
-        for true in ytest:
-            acc = accuracy_score(true[y],pred[y])
-            accuracies[y] = acc
+    acc = accuracy_score(ytest,predictions)
+    grid[z] = acc
         
+    return grid
