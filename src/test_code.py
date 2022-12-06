@@ -20,10 +20,10 @@ X,y = get_XY()
 ethnic_index = ethnicities()
 
 (Xt_train, Xt_test, yt_train, yt_test, 
-        Xw_train, Xw_test, yw_train, yw_test,
-        Xb_train, Xb_test, yb_train, yb_test,
-        Xa_train, Xa_test, ya_train, ya_test,
-        Xh_train, Xh_test, yh_train, yh_test) = ethnic_split(X,y,ethnic_index, random_state = random)
+ Xw_train, Xw_test, yw_train, yw_test,
+ Xb_train, Xb_test, yb_train, yb_test,
+ Xa_train, Xa_test, ya_train, ya_test,
+ Xh_train, Xh_test, yh_train, yh_test) = ethnic_split(X,y,ethnic_index, random_state = random)
 
 clfw = class_train("Random Forest", Xw_train, yw_train, random_state = random)
 clfb = class_train("Random Forest", Xb_train, yb_train, random_state = random)
