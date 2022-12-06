@@ -4,14 +4,18 @@ Created on Thu Dec  1 10:05:21 2022
 
 @author: celestec
 """
+import time
+start_time = time.time()
 
-from src.utils import get_XY, ethnicities
-from src.group_split import ethnic_split
-from src.model_training import class_train, ethnic_stack_train
-from src.group_metrics import standard_metrics, ethnic_metrics, ethnic_accuracy_grid, ethnic_pred_metric_pipe
+from utils import get_XY, ethnicities
+from group_split import ethnic_split
+from model_training import class_train, ethnic_stack_train
+from group_metrics import standard_metrics, ethnic_metrics, ethnic_accuracy_grid, ethnic_pred_metric_pipe, ethnic_acc_breakdown
 
-random = 1
+random = 2022
 #%%
+
+
 X,y = get_XY()
 ethnic_index = ethnicities()
 
@@ -28,10 +32,14 @@ clfh = class_train("Random Forest", Xh_train, yh_train, random_state = random)
 clft = class_train("Random Forest", Xt_train, yt_train, random_state = random)
 clfs = ethnic_stack_train(clfw, clfb, clfa, clfh, Xt_train, yt_train)
 
-#y_pred_clfw, y_pred_clfb,y_pred_clfa, y_pred_clfh, y_pred_clft = ethnic_pred(clfs, Xw_test, Xb_test, Xa_test, Xh_test, Xt_test)
-
 #%%
 
 classifiers = (clfw,clfb,clfa,clfh,clft,clfs)
+Xtest = (Xw_test, Xb_test, Xa_test, Xh_test, Xt_test)
+ytest = (yw_test, yb_test, ya_test, yh_test, yt_test)
 
-grid = ethnic_pred_metric_pipe(classifiers, Xt_test, yt_test)
+grid = ethnic_pred_metric_pipe(classifiers, Xtest, ytest)
+#%%
+acc_breakdown = ethnic_acc_breakdown(classifiers, Xt_test,yt_test,ethnic_index)
+
+print("--- %s seconds ---" % (time.time() - start_time))

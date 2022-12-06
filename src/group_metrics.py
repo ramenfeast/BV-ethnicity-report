@@ -88,15 +88,67 @@ def ethnic_pred_metric_pipe(classifiers, Xtest, ytest):
     grid = pd.DataFrame(index = ['White','Black','Asian','Hispanic', 'Total'],
                     data = data
                     )
-    z = 0
+    n = 0
     for clf in classifiers:
-        predictions = []
         x = 0
+        accuracy = []
         for test in Xtest:
-            pred = clf.predict(test)
-            predictions[x]=pred
-            x+=1
-    acc = accuracy_score(ytest,predictions)
-    grid[z] = acc
-        
+            pred = clf.predict(Xtest[x])
+            acc = [accuracy_score(ytest[x],pred)]
+            accuracy = accuracy + acc
+            x +=1
+        for y in [0,1,2,3,4]:
+            grid.iloc[y,n] = accuracy[y]
+        n+=1
     return grid
+
+        
+def ethnic_acc_breakdown(classifiers, Xtest, ytest, ethnic_index):
+    data = {'White Trained': np.zeros(5),
+        'Black Trained': np.zeros(5),
+        'Asian Trained': np.zeros(5),
+        'Hispanic Trained': np.zeros(5),
+        'Total Trained': np.zeros(5),
+        'Stack Classifier': np.zeros(5)}
+    grid = pd.DataFrame(index = ['White','Black','Asian','Hispanic', 'Total'],
+                    data = data
+                    )
+    n = 0
+    for clf in classifiers:
+        pred = clf.predict(Xtest)
+        total_acc = accuracy_score(ytest,pred)
+        tracker = np.zeros(4)
+        total = np.zeros(4)
+        x=0
+        col = ytest.shape
+        for i in range(col[0]):
+            guess = pred[i]
+            check = ytest.iloc[i]
+            
+            if ethnic_index[ytest.index[i]] == 'White':
+                total[0] = total[0]+1
+                if guess == check:
+                    tracker[0]=tracker[0]+1
+
+            elif ethnic_index[ytest.index[i]] == 'Black':
+                total[1] = total[1]+1
+                if guess == check:
+                    tracker[1]=tracker[1]+1
+
+            elif ethnic_index[ytest.index[i]] == 'Asian':
+                total[2] = total[2]+1
+                if guess == check:
+                    tracker[2]=tracker[2]+1
+
+            elif ethnic_index[ytest.index[i]] == 'Hispanic':
+                total[3] = total[3]+1
+                if guess == check:
+                    tracker[3]=tracker[3]+1
+            x+=1
+        ethnic_acc = np.divide(tracker,total)
+        for y in [0,1,2,3]:
+            grid.iloc[y,n] = ethnic_acc[y]
+        grid.iloc[4,n]=total_acc
+        n+=1
+    return grid
+    
