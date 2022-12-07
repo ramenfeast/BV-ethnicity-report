@@ -4,7 +4,6 @@ Created on Wed Nov 30 2022
 
 @author: celestec
 """
-rando = 1
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -12,8 +11,8 @@ from sklearn.model_selection import train_test_split
 
 def ethnic_split(X,y,ethnic_index, random_state):
 
-    # X,y = utils.get_XY()
-    # ethnic_index = utils.ethnicities()
+    #X,y = utils.get_XY()
+    #ethnic_index = utils.ethnicities()
     X_w = X.loc[ethnic_index == 'White']
     X_b = X.loc[ethnic_index == 'Black']
     X_a = X.loc[ethnic_index == 'Asian']
@@ -30,45 +29,50 @@ def ethnic_split(X,y,ethnic_index, random_state):
     m = 0
     for i in [X_w, X_b, X_a, X_h]:
         train_index = list(set(i.index).intersection(set(Xt_train.index)))
-        test_index = list(set(i.index).intersection(set(Xt_test.index)))
+        #test_index = list(set(i.index).intersection(set(Xt_test.index)))
         
         if m == 0:
             Xw_train = X_w.loc[train_index]
             yw_train = y_w.loc[train_index]
-            Xw_test = X_w.loc[test_index]
-            yw_test = y_w.loc[test_index]
         if m == 1:
             Xb_train = X_b.loc[train_index]
             yb_train = y_b.loc[train_index]
-            Xb_test = X_b.loc[test_index]
-            yb_test = y_b.loc[test_index]
         if m == 2:
             Xa_train = X_a.loc[train_index]
             ya_train = y_a.loc[train_index]
-            Xa_test = X_a.loc[test_index]
-            ya_test = y_a.loc[test_index]
         if m == 3:
             Xh_train = X_h.loc[train_index]
             yh_train = y_h.loc[train_index]
-            Xh_test = X_h.loc[test_index]
-            yh_test = y_h.loc[test_index]
             
         m += 1
         
+    
+
+    Xw_train, Xw_test, yw_train, yw_test = train_test_split(
+        Xw_train, yw_train, test_size=0.25, random_state=random_state, stratify = None)
+    
+    Xb_train, Xb_test, yb_train, yb_test = train_test_split(
+        Xb_train, yb_train, test_size=0.25, random_state=random_state, stratify = None)
+    
+    Xa_train, Xa_test, ya_train, ya_test = train_test_split(
+        Xa_train, ya_train, test_size=0.25, random_state=random_state, stratify = None)
+    
+    Xh_train, Xh_test, yh_train, yh_test = train_test_split(
+        Xh_train, yh_train, test_size=0.25, random_state=random_state, stratify = None)
+
     return (Xt_train, Xt_test, yt_train, yt_test, 
             Xw_train, Xw_test, yw_train, yw_test,
             Xb_train, Xb_test, yb_train, yb_test,
             Xa_train, Xa_test, ya_train, ya_test,
             Xh_train, Xh_test, yh_train, yh_test)
 
-
-def ethnic_test_train_spread():
+def ethnic_test_train_spread(X,y,ethnic_index, random_state):
     
     (Xt_train, Xt_test, yt_train, yt_test, 
      Xw_train, Xw_test, yw_train, yw_test,
      Xb_train, Xb_test, yb_train, yb_test,
      Xa_train, Xa_test, ya_train, ya_test,
-     Xh_train, Xh_test, yh_train, yh_test) = ethnic_split()
+     Xh_train, Xh_test, yh_train, yh_test) = ethnic_split(X,y,ethnic_index, random_state)
     
     Xt_test_count,_ = Xt_test.shape
     Xw_test_count,_ = Xw_test.shape
