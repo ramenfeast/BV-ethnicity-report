@@ -24,8 +24,38 @@ def get_XY():
   y[y<7]=0
   y[y>=7]=1
   return X,y
-#by_ethnicity = lambda  x,y:  [x["Ethnic Groupa"] == y]
+
 def ethnicities():
     return get_data().to_numpy()[:,0]
 def groups():
     return get_data().to_numpy()[:,1]
+def Ftest_XY():
+  url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/results/Feature%20selection/Ftestfeatures.csv"
+  download = requests.get(url).content
+  df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+  x,y= get_XY()
+  return x[df["Feature Name"]].to_numpy(),y.to_numpy()
+def Gini_XY():
+  url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/results/Feature%20selection/Ginifeatures.csv"
+  download = requests.get(url).content
+  df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+  x,y= get_XY()
+  return x[df["0"]].to_numpy(),y.to_numpy()
+def PBcorr_XY():
+  url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/results/Feature%20selection/PBcorr.csv"
+  download = requests.get(url).content
+  df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+  x,y= get_XY()
+  return x[df["Feature Name"]].to_numpy(),y.to_numpy()
+def Pbsig_XY():
+  url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/results/Feature%20selection/PBsignificant.csv"
+  download = requests.get(url).content
+  df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+  x,y= get_XY()
+  return x[df["Feature Name"]].to_numpy(),y.to_numpy()
+def Ttest_XY():
+  url = "https://cdn.jsdelivr.net/gh/ramenfeast/BV-ethnicity-report/results/Feature%20selection/Ttestfeatures.csv"
+  download = requests.get(url).content
+  df = pd.read_csv(io.StringIO(download.decode('utf-8')))
+  x,y= get_XY()
+  return x[df["0"]].to_numpy(), y.to_numpy()
